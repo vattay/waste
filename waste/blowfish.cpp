@@ -22,8 +22,6 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 C++ implementation by Md5Chap
 */
 
-#include "stdafx.hpp"
-
 #include "platform.hpp"
 
 #include "blowfish.hpp"
@@ -491,9 +489,9 @@ public:
 	{
 		unsigned long left = htolui(*lp), right = htolui(*rp);
 
-		left ^=*IV_L; right^=*IV_R;
-		Blowfish_Encrypt(ctx,left,right);
-		*IV_L=left; *IV_R=right;
+		left  ^= *IV_L; right ^= *IV_R;
+		Blowfish_Encrypt(ctx, left, right);
+		*IV_L ^= left; *IV_R ^= right;
 
 		*lp = ltohui(left); *rp = ltohui(right);
 	};
@@ -502,9 +500,9 @@ public:
 		unsigned long left = htolui(*lp), right = htolui(*rp);
 		unsigned long tl = left, tr = right;
 
-		Blowfish_Decrypt(ctx,left,right);
-		left ^=*IV_L; right^=*IV_R;
-		*IV_L=tl; *IV_R=tr;
+		Blowfish_Decrypt(ctx, left, right);
+		left  ^= *IV_L; right ^= *IV_R;
+		*IV_L ^= tl; *IV_R ^= tr;
 
 		*lp = ltohui(left); *rp = ltohui(right);
 	};
@@ -616,7 +614,7 @@ CBlowfish::CBlowfish()
 	m_IV_Dec[0]=m_IV_Dec[1]=0;
 }
 
-CBlowfish::CBlowfish(void* key, unsigned int len)
+CBlowfish::CBlowfish(const void* key, unsigned int len)
 {
 	Init(key,len);
 }
@@ -626,9 +624,9 @@ CBlowfish::~CBlowfish()
 	Final();
 }
 
-void CBlowfish::Init(void* key, unsigned int len)
+void CBlowfish::Init(const void* key, unsigned int len)
 {
-	Blowfish_Init(&m_ctx,(unsigned char*)key,len);
+	Blowfish_Init(&m_ctx,(const unsigned char*)key,len);
 	m_IV_Enc[0]=m_IV_Enc[1]=0;
 	m_IV_Dec[0]=m_IV_Dec[1]=0;
 	m_bInited=true;

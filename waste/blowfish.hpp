@@ -41,9 +41,9 @@ class CBlowfish
 			IV_DEC
 		};
 		CBlowfish();
-		CBlowfish(void* key, unsigned int len);
+		CBlowfish(const void* key, unsigned int len);
 		~CBlowfish();
-		void Init(void* key, unsigned int len);
+		void Init(const void* key, unsigned int len);
 		void SetIV(_eIV which, unsigned long IV[2]);
 		void SetIV(_eIV which, unsigned long left, unsigned long right);
 		void GetIV(_eIV which, unsigned long IV[2]);
