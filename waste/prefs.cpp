@@ -2659,7 +2659,7 @@ static BOOL CALLBACK keyPassChangeProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,LP
 			char keyfn[1024];
 			sprintf(keyfn,"%s.pr4",g_config_prefix);
 			memset(&key,0,sizeof(key));
-			if (doLoadKey(hwndDlg,oldpass,keyfn,&key) || !key.bits) return 0;
+			if (doLoadKey(hwndDlg,(unsigned char *)oldpass,keyfn,&key) || !key.bits) return 0;
 
 			char newpasshash[SHA_OUTSIZE];
 			SHAify c;
