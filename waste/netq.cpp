@@ -174,7 +174,7 @@ void SaveNetQ()
 			/* nite613 Oops, I just broke the saving of ratings. Oh well,
 			 I think they're broken anyways, remind me to do away with them
 			 later. */
-			fprintf(fp,"%s:%hu:%d:100:%hhu\n",host,cc->get_remote_port(),cc->get_keep());
+			fprintf(fp,"%s:%hu:100:%hhu\n",host,cc->get_remote_port(),cc->get_keep());
 		};
 
 		fprintf(fp,"\n");
