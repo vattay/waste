@@ -48,7 +48,7 @@ VS_VERSION_INFO VERSIONINFO
 			BLOCK "000004b0"
 			BEGIN
 				VALUE "CompanyName", "GNU"
-				VALUE "FileDescription", "Waste Secure Network"
+				VALUE "FileDescription", "WASTE Secure Collaboration Client"
 				VALUE "FileVersion", __VER_SFULLRB
 				VALUE "InternalName", "WasteSrv.exe"
 				VALUE "LegalCopyright", "(C) 2003 Nullsoft, Inc., (C) 2004 WASTE Development Team"
