@@ -1,29 +1,28 @@
-OBJS = asyncdns.o config.o connection.o filedb.o listen.o m_chat.o m_file.o m_keydist.o m_ping.o m_search.o m_upload.o mqueue.o mqueuelist.o netkern.o sha.o util.o xfers.o xferwnd.o srchwnd.o srvmain.o blowfish.o m_lcaps.o
+OBJS = asyncdns.o blowfish.o config.o connection.o d_chat.o filedb.o license.o \
+       listen.o m_chat.o m_file.o m_keydist.o m_lcaps.o m_ping.o m_search.o \
+       m_upload.o mqueue.o mqueuelist.o netkern.o sha.o sharedmain.o shbuf.o \
+       srchwnd.o srvmain.o util.o xfers.o xferwnd.o
 
+RSA_OBJS = rsa/md5.o rsa/nn.o rsa/prime.o rsa/r_keygen.o rsa/r_random.o \
+          rsa/rsa.o
 
-RSAOBJS = md5c.o nn.o prime.o r_random.o rsa.o 
+DEPLOY_FLAGS = -s -O2 -DNODEBUG -DNDEBUG
+DEVELOP_FLAGS = -g -O0 -DDEBUG
+WARNING_FLAGS =
+INCLUDES = -I. -Irsa
+DEFINES = -D_DEFINE_SRV
 
-DEBUGFLAG = 
-CXXFLAGS = -O2 $(DEBUGFLAG) -pipe  -Irsa -DBIG_ENDIAN
-CC=gcc
-CFLAGS = -O2 $(DEBUGFLAG) -pipe  -Irsa -DBIG_ENDIAN
+#STYLE_FLAGS = $(DEPLOY_FLAGS)
+STYLE_FLAGS = $(DEVELOP_FLAGS) # Still under development
+
+CFLAGS = -pipe $(STYLE_FLAGS) $(WARNING_FLAGS) $(INCLUDES) $(DEFINES)
+CXXFLAGS = $(CFLAGS)
 
 default: wastesrv
 
-md5c.o: rsa/md5c.c
-	$(CC) $(CFLAGS) -c -o md5c.o rsa/md5c.c
-nn.o: rsa/nn.c
-	$(CC) $(CFLAGS) -c -o nn.o rsa/nn.c
-prime.o: rsa/prime.c
-	$(CC) $(CFLAGS) -c -o prime.o rsa/prime.c
-r_random.o: rsa/r_random.c
-	$(CC) $(CFLAGS) -c -o r_random.o rsa/r_random.c
-rsa.o: rsa/rsa.c
-	$(CC) $(CFLAGS) -c -o rsa.o rsa/rsa.c
-
-wastesrv: $(OBJS) $(RSAOBJS)
-	$(CXX) $(DEBUGFLAG) -o wastesrv $(OBJS) $(RSAOBJS)
+wastesrv: $(OBJS) $(RSA_OBJS)
+       $(CXX) $(DEBUGFLAG) -o wastesrv $(OBJS) $(RSA_OBJS)
 
 
 clean:
-	-rm *.o wastesrv
+       -rm *.o rsa/*.o wastesrv
