@@ -23,6 +23,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "platform.hpp"
 #include "config.hpp"
 
+#define strCompare ((int (*)(const void *, const void *)) &strcasecmp)
+
 void C_Config::Flush()
 {
 	if (!m_dirty) return;
@@ -32,13 +34,19 @@ void C_Config::Flush()
 	fprintf(fp,"[profile]\n");
 	int x;
 	if (m_strs) {
+#if !_WIN32
+		// Emit a sorted list of profile options on unix
+		// Though I'd prefer to emit an image of the input comments and all
+		qsort(m_strs, m_num_strs, sizeof(m_strs[0]), strCompare);
+#endif // !_WIN32
+
 		for (x = 0; x < m_num_strs; x ++) {
 			char name[17];
 			memcpy(name,m_strs[x].name,16);
 			name[16]=0;
 			if (m_strs[x].value) fprintf(fp,"%s=%s\n",name,m_strs[x].value);
-		};
-	};
+		}
+	}
 	fclose(fp);
 	m_dirty=0;
 }
@@ -87,21 +95,21 @@ C_Config::C_Config(char *ini)
 	fclose(fp);
 }
 
-void C_Config::WriteInt(char *name, int value)
+void C_Config::WriteInt(const char *name, int value)
 {
 	char buf[32];
 	sprintf(buf,"%d",value);
 	WriteString(name,buf);
 }
 
-int C_Config::ReadInt(char *name, int defvalue)
+int C_Config::ReadInt(const char *name, int defvalue) const
 {
 	const char *t=ReadString(name,"");
 	if (*t) return atoi(t);
 	return defvalue;
 }
 
-const char *C_Config::WriteString(char *name, const char *string)
+const char *C_Config::WriteString(const char *name, const char *string)
 {
 	int x;
 	m_dirty=1;
@@ -131,7 +139,7 @@ const char *C_Config::WriteString(char *name, const char *string)
 	return m_strs[m_num_strs++].value;
 }
 
-const char *C_Config::ReadString(char *name, const char *defstr)
+const char *C_Config::ReadString(const char *name, const char *defstr) const
 {
 	int x;
 	for (x = 0; x < m_num_strs; x ++) {
@@ -140,4 +148,9 @@ const char *C_Config::ReadString(char *name, const char *defstr)
 		};
 	};
 	return defstr;
+}
+
+const char *C_Config::GetIniFile() const
+{
+	return m_inifile;
 }
