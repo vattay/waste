@@ -18,8 +18,10 @@ along with WASTE; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
+#include "stdafx.hpp"
 #include "platform.hpp"
 #include "listview.hpp"
+#include "main.hpp"
 
 #if _DEFINE_WIN32_CLIENT
 void W_ListView::AddCol(char *text, int w)
