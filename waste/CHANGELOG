@@ -6,6 +6,12 @@ Changes since 1.5b2:
 -Added intelligence for dynamic IP robustness
 -Endian changes to encryption code for MacOSX port
 -Added wastesrv_admin tool for creating config files in unix
+-File scanning now follows symbolic links on unix
 -Various compiler warnings fixed
+***Released 11-22-04 Nightly Build
 -Increased FILE_CHUNKSIZE from 4k to 24k, doubled my LAN speeds
-
+***Released 1-22-05 Nightly Build
+-Added patch for binding() to specific address based 
+ on "forced IP" thanks to Conny Brunnkvist (kop) for the patch
+-Backed out FILE_CHUNKSIZE change, was causing corruption 
+ problems with mismatched clients

@@ -1243,6 +1243,10 @@ void XferRecv::onGotMsg(C_FileSendReply *reply)
 						unsigned int l_h,l_l;
 						lasthdr->get_file_len(&l_l,&l_h);
 						lasthdr->get_hash(hash);
+/***** nite613 The following line ignores CONFIG_maxsizesha (!l_h instead) 
+This means it will SHA check any file on receive that is < 4G
+and for which the sender decided it should generate a SHA*/
+
 						if (memcmp(zerohash,hash,SHA_OUTSIZE) && !l_h) {
 							#ifdef XFER_WIN32_FILEIO
 								SetFilePointer(m_houtfile,0,NULL,FILE_BEGIN);

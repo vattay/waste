@@ -50,6 +50,12 @@ C_Listen::C_Listen(short port, char *which_interface)
 		if (!which_interface || !sin.sin_addr.s_addr) {
 			sin.sin_addr.s_addr=INADDR_ANY;
 		};
+		
+		if (g_forceip_dynip_mode==1) {
+			sin.sin_addr.s_addr = g_forceip_dynip_addr;
+			log_printf(ds_Informational, "Ip Mode(force): Binding to address %s", inet_ntoa(sin.sin_addr));
+		}
+		
 		if (::bind(m_socket,(sockaddr *)&sin,sizeof(sin))) {
 			closesocket(m_socket);
 			m_socket=-1;

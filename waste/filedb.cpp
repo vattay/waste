@@ -699,7 +699,6 @@ int C_FileDB::DoScan(int maxtime, C_FileDB *oldDB)
 									FoundLink:
 										stat(buf,&s);
 										if (s.st_mode & S_IFDIR) t=DT_DIR;
-/***** nite613 adding symbolic link following*/
 										if (s.st_mode & S_IFLNK){
 											log_printf(ds_Informational,"Found symbolic link: %s\n", buf);
 											readlink(buf, buf, sizeof(buf));
