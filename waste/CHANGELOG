@@ -15,3 +15,5 @@ Changes since 1.5b2:
  on "forced IP" thanks to Conny Brunnkvist (kop) for the patch
 -Backed out FILE_CHUNKSIZE change, was causing corruption 
  problems with mismatched clients
+-Fixed bug with dynDNS on outgoing connections
+-Eliminated some windows build warnings

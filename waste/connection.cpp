@@ -190,10 +190,23 @@ void C_Connection::deactivate(char forget)
 
 	this->close(0);
 
-	//Outgoing connections  (Incomings don't appear in g_netq)
-	if(!this->is_incoming() && forget){
-		log_printf(ds_Informational,"Forgetting connection to: %s from g_netq\n", m_dns);
-		g_netq.Del(this);
+	//Outgoing connections  
+	if(!this->is_incoming()){
+
+		//***** nite613 attempting to resolve furthur DynDNS problems with 
+		// outgoing connections 
+		//Invalidate the DNS entry. This may entirely defeat the purpose of
+		//DNS caching in the first place. 
+		m_dns->invalidate(m_host);
+
+		//We also have to blank this so that there is a re-resolution in ::run
+		m_saddr.sin_addr.s_addr = INADDR_NONE;
+
+		//If we're forgetting about this connection, that means remove it from g_netq
+		if(forget){
+			log_printf(ds_Informational,"Forgetting connection to: %s from g_netq\n", m_dns);
+			g_netq.Del(this);
+		}
 	}
 
 	//Need to self-destruct incomings and forgets
@@ -505,17 +518,21 @@ C_Connection::~C_Connection()
 	//Remove ourself from g_new_net (no effect if we're not there)
 	g_new_net.Del(this);	
 
-	//If an outbound connection is dying and we never successfully connected, invalidate DNS cache entries for this host
-	if(m_dns && m_host && !m_ever_connected)
+//***** 
+	//If an outbound connection is dying, invalidate DNS cache entries for this host
+	if(m_dns && m_host 
+		//&& !m_ever_connected
+	){
 		m_dns->invalidate(m_host);
-	else{
+	}
+//	else{
 		char descstr_s[16+SHA_OUTSIZE*2+32];
 		MakeUserStringFromHash(get_remote_pkey_hash(), NULL, descstr_s);
 		struct in_addr in;
 		in.s_addr=get_remote();
 		char *ad=inet_ntoa(in);
 		log_printf(ds_Console,"Destroying connection to host: %s (%s)",ad,descstr_s);
-	}
+//	}
 }
 
 void C_Connection::calc_bps(int *send, int *recv)
@@ -567,6 +584,8 @@ C_Connection::state C_Connection::run(int max_send_bytes, int max_recv_bytes)
 
 	if (m_state == STATE_RESOLVING) {
 		if (!m_host[0]) return (m_state=STATE_ERROR);
+
+		//***** This test has been defeating dynDNS on outgoing connections!
 		if (m_saddr.sin_addr.s_addr == INADDR_NONE) {
 			int a=m_dns?m_dns->resolve(m_host,(unsigned long int *)&m_saddr.sin_addr.s_addr):-1;
 			switch (a)

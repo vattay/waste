@@ -496,7 +496,9 @@ void NetKern_Run()
 
 C_Connection *AddConnection(char *str, unsigned short port, int rating)
 {
-	C_Connection *newcon;
+	//Initializing this to get rid of what I beleive to be an incorrect warning
+	//If waste segfaults from this I guess the compiler wins ;)
+	C_Connection *newcon = 0;
 
 	//Prevent duplicate connection objects
 	char found=0;

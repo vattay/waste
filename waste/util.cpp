@@ -97,7 +97,7 @@ static inline unsigned Hex2Bin_nibble(char c)
 {
 	unsigned t = tolower(c) - '0';
 	if (t > 9) {
-		t += '0' - 'a';	// add the '0' back in and subtract an 'a'
+		t += (unsigned int)('0' - 'a');	// add the '0' back in and subtract an 'a'
 		if (t <= 0xf - 0xa)
 			t += 0xa;
 		else
@@ -118,7 +118,7 @@ Hex2Bin(unsigned char *dst, const char *src, size_t dstlen)
 		 byte = (byte << 4) | Hex2Bin_nibble(*src++);
 		 if ( !(byte + 1) )	// if byte == -1
 			 return 0;
-		 *cp++ = byte;
+		 *cp++ = (unsigned char)byte;
 	}
 
 	return dst;
@@ -559,11 +559,11 @@ static int readEncodedChar(FILE *in) // returns -1 on error
 	} while (strchr(ignorelist, (char) c));
 
 	// Get high nibble
-	int  byte = (int) Hex2Bin_nibble(c);
+	int  byte = (int) Hex2Bin_nibble((char)c);
 	if (byte < 0 || (EOF == (c = fgetc(in))))
 		return -1;
 
-	return (byte << 4) | Hex2Bin_nibble(c);
+	return (byte << 4) | Hex2Bin_nibble((char) c);
 }
 
 static int readBFdata(FILE *in, CBlowfish *bl, void *data, unsigned int len)
