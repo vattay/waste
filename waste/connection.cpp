@@ -30,7 +30,11 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "rsa/r_random.hpp"
 #include "rsa/rsa.hpp"
 
-/* nite613 moving this change from WASTED */
+/* nite613 moving this change from WASTED 
+ * This still needs some work however because blocking connects can
+ * cause hangups on outbound connections at startup and on a DC
+ * request
+ */
 #if !defined(_WIN32)
 /* Windows non-blocking connect() works just fine, but it is
  * "one of the most non-portable areas of Unix network programming".
@@ -429,9 +433,17 @@ C_Connection::~C_Connection()
 	m_fish_send.Final();
 	m_fish_recv.Final();
 	memset(m_mykeyinfo.raw,0,sizeof(m_mykeyinfo.raw));
-	//If we're dying due to an error, invalidate DNS cache entries for this host
-	if(m_state==STATE_ERROR)
+	//If we're dying and we never successfully connected, invalidate DNS cache entries for this host
+	if(!m_ever_connected)
 		m_dns->invalidate(m_host);
+	else{
+		char descstr_s[16+SHA_OUTSIZE*2+32];
+		MakeUserStringFromHash(get_remote_pkey_hash(), NULL, descstr_s);
+		struct in_addr in;
+		in.s_addr=get_remote();
+		char *ad=inet_ntoa(in);
+		log_printf(ds_Console,"Destroying connection to host: %s (%s)",ad,descstr_s);
+	}
 }
 
 void C_Connection::calc_bps(int *send, int *recv)

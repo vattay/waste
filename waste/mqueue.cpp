@@ -186,6 +186,7 @@ void C_MessageQueue::run(int isrecv, int maxbytesend)
 				m_newmsg.data=new C_SHBuf(m_newmsg.message_length);
 				if (!m_newmsg.data->Get()) {
 					delete m_newmsg.data;
+					log_printf(ds_Warning, "queue::run() got message with no data");
 					m_newmsg.message_length=0;
 					m_con->close(1);
 					return;
