@@ -518,7 +518,7 @@ C_Connection::state C_Connection::run(int max_send_bytes, int max_recv_bytes)
 		FD_SET(m_socket,&f2);
 		struct timeval tv;
 		memset(&tv,0,sizeof(tv));
-		if (select(0,NULL,&f,&f2,&tv)==-1) {
+		if (select(m_socket+1,NULL,&f,&f2,&tv)==-1) {
 			log_printf(ds_Error,"connection::run: select() returned error: %d",ERRNO);
 			return (m_state=STATE_ERROR);
 		};
