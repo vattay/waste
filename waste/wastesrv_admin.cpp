@@ -112,7 +112,7 @@ static void usage()
 	memset(szCR2, 0, sK0[1]);
 	free(szCR2);
 
-	fprintf(stderr, "%s: [-bhLv] [-a -|<public key file>] [-f <passphrase>] [-p profile] [-s <keysize>] [-n nickname]\n", g_cmdname);
+	fprintf(stderr, "%s: [-bhLv] [-a -|<public key file>] [-f <passphrase>] [-p profile] [-k <keysize>] [-n nickname]\n", g_cmdname);
 	fputs("where	-a	Add a public key, ('-' from input)\n", stderr);
 	fputs("	-b	dump public key for profile\n", stderr);
 	fprintf(stderr,"	-p	Profile in %s (Default)\n", WASTE_CONFIG_DIR);
@@ -120,7 +120,7 @@ static void usage()
 	fputs("	-l	Show the licence terms\n", stderr);
 	fputs("	-n	Nickname (unknown)\n", stderr);
 	fputs("	-f	Passphrase to protect secret key (request it)\n", stderr);
-	fputs("	-s	Generate a secret (private) key of the given length (0 ==> 1536)\n", stderr);
+	fputs("	-k	Generate a secret (private) key of the given length (0 ==> 1536)\n", stderr);
 	fputs("	-v	Verbose - increase the verbosity can be used more than once\n", stderr);
 	fputs("\nkeysize can be one of\n", stderr);
 	fputs("    1024 bits (weak, not recommended)\n", stderr);
