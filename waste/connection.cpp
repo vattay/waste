@@ -415,6 +415,9 @@ C_Connection::~C_Connection()
 	m_fish_send.Final();
 	m_fish_recv.Final();
 	memset(m_mykeyinfo.raw,0,sizeof(m_mykeyinfo.raw));
+	//If we're dying due to an error, invalidate DNS cache entries for this host
+	if(m_state==STATE_ERROR)
+		m_dns->invalidate(m_host);
 }
 
 void C_Connection::calc_bps(int *send, int *recv)

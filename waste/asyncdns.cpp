@@ -101,6 +101,18 @@ C_AsyncDNS::~C_AsyncDNS()
 	return 0;
 }
 
+//To remove cache entry for a particular hostname
+void C_AsyncDNS::invalidate(char *hostname)
+{
+	int x;
+	for(x = 0; x < m_cache_size; x ++) {
+		if (!stricmp(m_cache[x].hostname,hostname)){
+			memset(m_cache[x], 0, sizeof(cache_entry));
+			return;
+		}
+	}
+}
+
 int C_AsyncDNS::resolve(char *hostname, unsigned long *addr)
 {
 	//return 0 on success, 1 on wait, -1 on unresolvable

@@ -28,6 +28,7 @@ public:
 	~C_AsyncDNS();
 
 	int resolve(char *hostname, unsigned long *addr); //return 0 on success, 1 on wait, -1 on unresolvable
+	void invalidate(char *hostname);
 
 protected:
 	struct cache_entry
