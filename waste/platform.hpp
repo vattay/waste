@@ -72,7 +72,7 @@ static inline unsigned int   htolui(unsigned int   a) { return a; }
 #if __APPLE__
 #include <architecture/byte_order.h>
 #define WASTE_CONFIG_DIR "~/Library/Waste/"
-#else
+#else // __gnu_linux__
 #define WASTE_CONFIG_DIR "~/.waste/"
 #include <byteswap.h>
 #endif
@@ -88,7 +88,7 @@ static inline unsigned int   htolui(unsigned int   a) { return a; }
 #define strnicmp(x,y,z) strncasecmp(x,y,z)
 #define _vsnprintf vsnprintf
 
-#if __BIG_ENDIAN__
+#if BYTE_ORDER == BIG_ENDIAN
 
 // Byte swap routines host to big routines - don't bother with 64 bit yet
 #if __APPLE__
@@ -110,7 +110,7 @@ static inline unsigned int   htolui(unsigned int a)
 static inline unsigned short htobus(unsigned short a) { return a; }
 static inline unsigned int   htobui(unsigned int   a) { return a; }
 
-#else // Not __BIG_ENDIAN__
+#else // Not BYTE_ORDER == BIG_ENDIAN
 
 // Byte swap routines host to little routines - don't bother with 64 bit yet
 static inline unsigned short htolus(unsigned short a) { return a; }
@@ -121,7 +121,7 @@ static inline unsigned short htobus(unsigned short a)
 static inline unsigned int   htobui(unsigned int a)
 	{ return bswap_32(a); }
 
-#endif // __BIG_ENDIAN__
+#endif // BYTE_ORDER == BIG_ENDIAN
 
 // Implement the signed swaps in terms of the unsigned implementations
 static inline short htols(short a)
