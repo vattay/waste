@@ -38,6 +38,7 @@ public:
 	~C_MessageQueueList();
 
 	int AddMessageQueue(C_MessageQueue *q);
+	void DelMessageQueue(C_MessageQueue *q){ m_queues->Del(q); }
 	int send(T_Message *msg);
 	int GetNumQueues() { return m_queues->GetSize(); }
 	C_MessageQueue *GetQueue(int x) { return m_queues->Get(x); }

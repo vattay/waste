@@ -95,12 +95,15 @@ public:
 	~C_Connection();
 
 	void activate(backoff_ctrl backoff);
-	void deactivate();
+	void deactivate(char forget);
 
 	void set_keep(char keep){ m_keep = keep; }
 	char get_keep(){ return m_keep; }
 	void set_good(){ m_last_success = time(NULL); m_incomplete_attempts = 0; }
 	state get_state(){ return m_state; }
+	unsigned long get_backofftimer(){return (unsigned long)((m_incomplete_attempts * 60) - (time(NULL) - m_last_attempt));}
+	const char *get_host(){ return m_host; }
+	char is_incoming(){ return m_dns ? 0 : 1; }
 
 	state run(int max_send_bytes, int max_recv_bytes);
 
@@ -157,6 +160,7 @@ protected:
 	time_t m_last_attempt;
 	time_t m_last_success;
 	char m_keep;
+	char m_deactivating;
 
 	int m_remote_maxsend;
 	int m_satmode;

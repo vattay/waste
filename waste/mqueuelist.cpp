@@ -215,7 +215,8 @@ void C_MessageQueueList::run(int doRouting)
 						m_lv->GetText(i,1,text,sizeof(text));
 						if (!strstr(text,":")) m_lv->DeleteItem(i);
 						else {
-							m_lv->SetItemParam(i,0);
+							//***** Let this be the one!
+							//m_lv->SetItemParam(i,0);
 							m_lv->SetItemText(i,0,"Disconnected");
 							if (!cm->get_stat_recv() || !cm->get_stat_send()) {
 								m_lv->GetText(i,2,text,sizeof(text));

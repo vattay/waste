@@ -58,12 +58,19 @@ public:
 		};
 	};
 
+	void Del(T *item)
+	{
+		if(m_list && m_size && item)
+			for(int i = 0; i < m_size; i++)
+				if(m_list[i] == item)
+					this->Del(i--);							
+	};
+
 	int GetSize() { return m_size; }
 
 protected:
 	T **m_list;
 	int m_size;
-
 };
 
 #endif //_C_ITEMLIST_H_

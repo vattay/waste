@@ -98,6 +98,7 @@ _bfInit::_stage _bfInit::GetStage()
 C_Connection::C_Connection(int s, struct sockaddr_in *loc)
 {
 	do_init();
+	m_keep=0;
 	m_incomplete_attempts=0;
 	m_socket=s;
 	SET_SOCK_BLOCK(m_socket,0);
@@ -108,6 +109,7 @@ C_Connection::C_Connection(int s, struct sockaddr_in *loc)
 	m_has_sent_remoteip=false;
 	if (loc) m_saddr=*loc;
 	else memset(&m_saddr,0,sizeof(m_saddr));
+	safe_strncpy(m_host, inet_ntoa(m_saddr.sin_addr), sizeof(m_host));
 	m_cansend=false;
 }
 
@@ -115,6 +117,7 @@ C_Connection::C_Connection(int s, struct sockaddr_in *loc)
 C_Connection::C_Connection(char *hostname, unsigned short port)
 {
 	do_init();
+	m_keep=0;
 	m_incomplete_attempts=0;
 	g_netq.Add(this);
 	m_cansend=true;
@@ -149,17 +152,21 @@ void C_Connection::activate(backoff_ctrl backoff)
 	}
 
 	if(m_last_attempt != 0){
+
 		//Don't touch active connections
-		if(m_state != STATE_ERROR && m_state < STATE_CLOSING)
+		if(m_state != STATE_ERROR && m_state < STATE_CLOSING){
 			return;
+		}
+
+		log_printf(ds_Informational,"Activating connection: %s:%d (last_attempt = %d)\n", m_host, m_remote_port, m_last_attempt);
 
 		//Clean up for a new activation
-		do_init();
 		shutdown(m_socket, SHUT_RDWR);
 		closesocket(m_socket);
+		do_init();
 	        m_socket=socket(AF_INET,SOCK_STREAM,0);
 		if (m_socket==-1) {
-			log_printf(ds_Error,"connection: call to socket() in activate() failed: %d.",ERRNO);
+			log_printf(ds_Error,"connection: call to socket() in activate() failed: %d.\n",ERRNO);
 		}
 		else {
 			SET_SOCK_BLOCK(m_socket,0);
@@ -174,17 +181,34 @@ void C_Connection::activate(backoff_ctrl backoff)
 
 }
 
-void C_Connection::deactivate()
+void C_Connection::deactivate(char forget)
 {
-
-	this->close(1);
-
-	// Only outgoing connections have m_dns set
-	if(!m_dns){
-		//Incoming connections that are being deactivated can die
-		delete this;  //NOTE: This will only work if this was allocated with a plain old "new"
+	if(m_deactivating)
 		return;
+
+	m_deactivating = 1;
+
+	this->close(0);
+
+	//Outgoing connections  (Incomings don't appear in g_netq)
+	if(!this->is_incoming() && forget){
+		log_printf(ds_Informational,"Forgetting connection to: %s from g_netq\n", m_dns);
+		g_netq.Del(this);
 	}
+
+	//Need to self-destruct incomings and forgets
+	if(this->is_incoming() || forget){
+		log_printf(ds_Informational,"Self destructing connection to: %s\n", m_dns);
+
+		#if _DEFINE_WIN32_CLIENT
+			int x = g_lvnetcons.FindItemByParam((int)this);
+			g_lvnetcons.DeleteItem(x);
+		#endif
+
+		g_netq.Del(this);
+		delete this;
+	}else
+		m_deactivating = 0;
 }
 
 void C_Connection::init_crypt()
@@ -446,9 +470,9 @@ void C_Connection::do_init()
 	m_send_bytes_total=0;
 	m_recv_bytes_total=0;
 	m_start_time=GetTickCount();
-	m_keep=0;
 	m_last_attempt=0;
 	m_last_success=0;
+	m_deactivating=0;
 	init_crypt();
 }
 
@@ -462,6 +486,25 @@ C_Connection::~C_Connection()
 	m_fish_send.Final();
 	m_fish_recv.Final();
 	memset(m_mykeyinfo.raw,0,sizeof(m_mykeyinfo.raw));
+
+	//Destroy MQs that name us as their connection
+	C_MessageQueue *tmpq;
+	for(int x=0; x < g_mql->GetNumQueues(); x++){
+		tmpq = g_mql->GetQueue(x);
+		if(tmpq->get_con() == this){
+
+			//Remove this MQ from the master list
+			g_mql->DelMessageQueue(tmpq);
+			x--;
+
+			//Destroy the MQ itself
+			delete tmpq;
+		}
+	}
+
+	//Remove ourself from g_new_net (no effect if we're not there)
+	g_new_net.Del(this);	
+
 	//If an outbound connection is dying and we never successfully connected, invalidate DNS cache entries for this host
 	if(m_dns && m_host && !m_ever_connected)
 		m_dns->invalidate(m_host);

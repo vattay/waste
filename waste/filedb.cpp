@@ -652,7 +652,7 @@ int C_FileDB::DoScan(int maxtime, C_FileDB *oldDB)
 				#else
 					s.dir_h=opendir(s.cur_path);
 					if (s.dir_h == 0) {
-						log_printf(ds_Warning,"C_FileDB::DoScan(): error calling findfirstfile(%s)!",s.cur_path);
+						log_printf(ds_Warning,"C_FileDB::DoScan(): error calling opendir(%s)!",s.cur_path);
 						continue;
 					};
 
@@ -681,12 +681,20 @@ int C_FileDB::DoScan(int maxtime, C_FileDB *oldDB)
 								#else
 									int t=d->d_type;
 									int fsize=0;
-									if (!t) {
+									if (!t || t == DT_LNK) {
 										char buf[4096];
 										sprintf(buf,"%s/%s",s.cur_path,d->d_name);
 										struct stat s;
+									FoundLink:
 										stat(buf,&s);
 										if (s.st_mode & S_IFDIR) t=DT_DIR;
+/***** nite613 adding symbolic link following*/
+										if (s.st_mode & S_IFLNK){
+											log_printf(ds_Warning,"Found symbolic link: %s\n", buf);
+											readlink(buf, buf, sizeof(buf));
+											log_printf(ds_Warning,"Resolved to: %s", buf);
+											goto FoundLink;
+										}
 										fsize=s.st_size;
 									};
 									if (t != DT_DIR)

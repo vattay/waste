@@ -75,7 +75,11 @@ C_MessageQueue::~C_MessageQueue()
 		m_newmsg.data->Unlock();
 	};
 	if (m_con) {
-		m_con->deactivate();
+		//This bit prevents connection destructor from trying to double-kill us ;)
+		C_Connection *tmpcon = m_con;
+		m_con=0;
+		
+		tmpcon->deactivate(0);
 	};
 }
 

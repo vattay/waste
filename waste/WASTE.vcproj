@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="7.10"
+	Version="7.00"
 	Name="WASTE"
 	ProjectGUID="{00F18A24-6EC0-44F2-8FC2-78C929C86594}"
 	RootNamespace="WASTE"

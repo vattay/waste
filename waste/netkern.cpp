@@ -65,8 +65,7 @@ static void ListenToSocket()
 			}
 			else {
 				c->send_bytes(g_con_str,SYNC_SIZE);
-				#if 0 
-				//_DEFINE_WIN32_CLIENT
+				#if _DEFINE_WIN32_CLIENT
 					struct in_addr in;
 					in.s_addr=addr;
 					char *a=inet_ntoa(in);
@@ -107,8 +106,7 @@ void NetKern_ConnectToHostIfOK(unsigned long ip, unsigned short port)
 		};
 	};
 
-	#if 0 
-	//_DEFINE_WIN32_CLIENT
+	#if _DEFINE_WIN32_CLIENT
 		int netqpos=-1;
 		int i,l;
 		l=g_lvnetcons.GetCount();
@@ -133,8 +131,7 @@ void NetKern_ConnectToHostIfOK(unsigned long ip, unsigned short port)
 		newcon->send_bytes(g_con_str,SYNC_SIZE);
 		g_new_net.Add(newcon);
 
-		#if 0 
-		//_DEFINE_WIN32_CLIENT
+		#if _DEFINE_WIN32_CLIENT
 			if (netqpos<0) {
 				char buf[1024];
 				sprintf(buf,"%s:%d",text,(int)(unsigned short)port);
@@ -278,19 +275,11 @@ static void HandleNewOutCons()
 		C_Connection *cc=g_new_net.Get(x);
 		int s=cc->run(-1,-1);
 		if (s == C_Connection::STATE_DIENOW) {
-
-			#if 0 
-			//_DEFINE_WIN32_CLIENT
-				int a=g_lvnetcons.FindItemByParam((int)cc);
-				if (a >= 0) {
-					g_lvnetcons.DeleteItem(a);
-				};
-			#endif
 			struct in_addr in;
 			in.s_addr=cc->get_remote();
 			char *ad=inet_ntoa(in);
 			log_printf(ds_Warning,"Could not connect to host: host %s not in access list!",ad);
-			cc->deactivate();
+			cc->deactivate(0);
 			g_new_net.Del(x--);
 			#if _DEFINE_WIN32_CLIENT
 				PostMessage(g_netstatus_wnd,WM_USER_TITLEUPDATE,0,0);
@@ -337,7 +326,7 @@ static void HandleNewOutCons()
 			in.s_addr=cc->get_remote();
 			char *ad=inet_ntoa(in);
 			log_printf(ds_Warning,"Could not connect to host: failed connect to %s!", ad);
-			cc->deactivate();
+			cc->deactivate(0);
 			g_new_net.Del(x--);
 			#if _DEFINE_WIN32_CLIENT
 				PostMessage(g_netstatus_wnd,WM_USER_TITLEUPDATE,0,0);
@@ -347,24 +336,21 @@ static void HandleNewOutCons()
 			char b[SYNC_SIZE];
 			cc->recv_bytes(b,SYNC_SIZE);
 			if (!cc->PopRandomCrap()) {
-				#if 0 
-				//_DEFINE_WIN32_CLIENT
+				#if _DEFINE_WIN32_CLIENT
 					int a=g_lvnetcons.FindItemByParam((int)cc);
 					if (a >= 0) {
 						g_lvnetcons.DeleteItem(a);
 					};
 				#endif
 				log_printf(ds_Error,"Cannot pop random crap. Bad shit happened!");
-				cc->deactivate();
+				cc->deactivate(0);
 				g_new_net.Del(x--);
-				#if 0
-				//_DEFINE_WIN32_CLIENT
+				#if _DEFINE_WIN32_CLIENT
 					PostMessage(g_netstatus_wnd,WM_USER_TITLEUPDATE,0,0);
 				#endif
 			}
 			else if (memcmp(b,g_con_str,SYNC_SIZE)) {
-				#if 0
-				//_DEFINE_WIN32_CLIENT
+				#if _DEFINE_WIN32_CLIENT
 					int a=g_lvnetcons.FindItemByParam((int)cc);
 					if (a >= 0) {
 						g_lvnetcons.DeleteItem(a);
@@ -376,7 +362,7 @@ static void HandleNewOutCons()
 				in.s_addr=cc->get_remote();
 				char *ad=inet_ntoa(in);
 				log_printf(ds_Warning,"Could not connect to host: failed auth by %s (%s)! Wrong network password?",ad,descstr_l);
-				cc->deactivate();
+				cc->deactivate(0);
 				g_new_net.Del(x--);
 				#if _DEFINE_WIN32_CLIENT
 					PostMessage(g_netstatus_wnd,WM_USER_TITLEUPDATE,0,0);
@@ -422,14 +408,13 @@ static void HandleNewOutCons()
 						if (in1>0 && numincons>=in1) {
 							log_printf(ds_Warning,"Limiter: Host %s as %s cannot connect, because incoming connection limit is reached!",ad,descstr_l);
 						};
-						#if 0
-						//_DEFINE_WIN32_CLIENT
+						#if _DEFINE_WIN32_CLIENT
 							int a=g_lvnetcons.FindItemByParam((int)cc);
 							if (a >= 0) {
 								g_lvnetcons.DeleteItem(a);
 							};
 						#endif
-						cc->deactivate();
+						cc->deactivate(0);
 						g_new_net.Del(x--);
 						allowconnection=false;
 						#if _DEFINE_WIN32_CLIENT
@@ -439,8 +424,7 @@ static void HandleNewOutCons()
 				};
 
 				if (allowconnection) {
-					#if 0
-					//_DEFINE_WIN32_CLIENT
+					#if _DEFINE_WIN32_CLIENT
 						int a=g_lvnetcons.FindItemByParam((int)cc);
 						if (a >= 0) {
 							char newconstr[512];
@@ -448,12 +432,19 @@ static void HandleNewOutCons()
 							in.s_addr=cc->get_remote();
 							char *ad=inet_ntoa(in);
 							if (!ad) ad="?";
-							int port=cc->get_remote_port();
-							if (!port) sprintf(newconstr,"%s (incoming)",ad);
-							else sprintf(newconstr,"%s:%d",ad,(int)(unsigned short)port);
+
+							if (cc->is_incoming())
+								sprintf(newconstr,"%s (incoming)",ad);
+							else{
+								int port=cc->get_remote_port();
+								sprintf(newconstr,"%s:%d",ad,(int)(unsigned short)port);
+							}
 							g_lvnetcons.SetItemText(a,0,"OK");
 							g_lvnetcons.SetItemText(a,1,newconstr);
-							if (port) g_lvnetcons.SetItemText(a,2,"100");
+							if (cc->get_keep()) 
+								g_lvnetcons.SetItemText(a,2,"Keep");
+							else
+								g_lvnetcons.SetItemText(a,2,"Temp");
 							if (g_extrainf==1) g_lvnetcons.SetItemText(a,3,descstr_l);
 							else g_lvnetcons.SetItemText(a,3,descstr_s);
 						};
@@ -473,8 +464,7 @@ static void HandleNewOutCons()
 					g_mql->AddMessageQueue(newq);
 					DoPing(newq);
 					g_new_net.Del(x--);
-					#if 0
-					//_DEFINE_WIN32_CLIENT
+					#if _DEFINE_WIN32_CLIENT
 						PostMessage(g_netstatus_wnd,WM_USER_TITLEUPDATE,0,0);
 					#endif
 				};
@@ -490,7 +480,7 @@ static void HandleNewOutCons()
 	}
 
 	//Process non permanent connections
-	for(x=0; (x < g_netq.GetSize()) && (g_mql->GetNumQueues()+g_new_net.GetSize() <= g_keepup); x++){
+	for(x=0; (x < g_netq.GetSize()) && (g_mql->GetNumQueues()+g_new_net.GetSize() < g_keepup); x++){
 		C_Connection *cc = g_netq.Get(x);
 		if(!cc->get_keep())
 			cc->activate(C_Connection::BACKOFF);
@@ -506,27 +496,27 @@ void NetKern_Run()
 C_Connection *AddConnection(char *str, unsigned short port, int rating)
 {
 	C_Connection *newcon;
-	newcon=new C_Connection(str,port);
 
-/*
-Code moved to C_Connection::activate
+	//Prevent duplicate connection objects
+	char found=0;
+	for(int x=0; !found && x < g_netq.GetSize(); x++){
+		newcon=g_netq.Get(x);
+		if(strncmp(newcon->get_host(), str, MAX_HOST_LENGTH) == 0 && newcon->get_remote_port() == port)
+			found=1;
+	}
+	if(!found){
+		
+		newcon=new C_Connection(str,port);
 
-	newcon->send_bytes(g_con_str,SYNC_SIZE);
-	g_new_net.Add(newcon);
-*/
-	#if _DEFINE_WIN32_CLIENT
-		char str2[512];
-		sprintf(str2,"%s:%d",str,(int)(unsigned short)port);
-		g_lvnetcons.InsertItem(0,"Inactive",(int)newcon);
-		g_lvnetcons.SetItemText(0,1,str2);
-		sprintf(str2,"%d",rating);
-		g_lvnetcons.SetItemText(0,2,str2);
-		if(newcon->get_keep())
-			g_lvnetcons.SetItemText(0,2,"Keep");
-		else
-			g_lvnetcons.SetItemText(0,2,"Temp");
-
-	#endif
+		#if _DEFINE_WIN32_CLIENT
+			char str2[512];
+			sprintf(str2,"%s:%d",str,(int)(unsigned short)port);
+			g_lvnetcons.InsertItem(0,"Inactive",(int)newcon);
+			g_lvnetcons.SetItemText(0,1,str2);
+			sprintf(str2,"%d",rating);
+			g_lvnetcons.SetItemText(0,2,str2);
+		#endif
+	}
 	return newcon;
 }
 
@@ -673,17 +663,32 @@ void DoPing(C_MessageQueue *mq)
 			{
 				if (IsWindowVisible(hwndDlg)) {
 
-					for(int x = 0; x < g_netq.GetSize(); x++){
-						C_Connection *thiscon = g_netq.Get(x);
-						int a=g_lvnetcons.FindItemByParam((int)thiscon);
+					for(int x = 0; x < g_lvnetcons.GetCount(); x++){
+						C_Connection *thiscon = (C_Connection *)g_lvnetcons.GetParam(x);
+
+						if(thiscon->get_keep())
+							g_lvnetcons.SetItemText(x,2,"Keep");
+						else
+							g_lvnetcons.SetItemText(x,2,"Temp");
+
+						int a=x;
 						switch(thiscon->get_state()){
+						
+						case C_Connection::STATE_ERROR:
+							{char str[128];
+							if(thiscon->is_incoming())
+								sprintf(str, "Error.");
+							else
+								sprintf(str, "Retrying in %lus...", thiscon->get_backofftimer());
+							g_lvnetcons.SetItemText(a,0,str);
+							}break;
 
 						case C_Connection::STATE_CONNECTING:
 							g_lvnetcons.SetItemText(a,0,"Connecting...");
 							break;
 						case C_Connection::STATE_CONNECTED:
 						case C_Connection::STATE_IDLE:
-							char str[128];
+							{char str[128];
 							int sbps, rbps;
 							thiscon->get_last_bps(&sbps,&rbps);
 
@@ -703,11 +708,14 @@ void DoPing(C_MessageQueue *mq)
 								};
 							};
 							g_lvnetcons.SetItemText(a,0,str);
-							break;
+							}break;
 						}
-						char hostnport[MAX_HOST_LENGTH+6];
+						char hostnport[MAX_HOST_LENGTH+16];
 						thiscon->get_remote_host(hostnport, MAX_HOST_LENGTH);
-						sprintf(hostnport, "%s:%hu", hostnport,thiscon->get_remote_port());
+						if(thiscon->is_incoming())
+							sprintf(hostnport, "%s (incoming)", hostnport);
+						else
+							sprintf(hostnport, "%s:%hu", hostnport,thiscon->get_remote_port());
 						g_lvnetcons.SetItemText(a,1,hostnport);
 						if(thiscon->get_keep())
 							g_lvnetcons.SetItemText(a,2,"Keep");
@@ -887,45 +895,39 @@ void DoPing(C_MessageQueue *mq)
 					};
 				case IDC_REMOVECONNECTION:
 					{
+						log_printf(ds_Informational,"Called REMOVECONNECTION\n");
 						int n=g_lvnetcons.GetCount();
 						int x;
 						for (x = 0; x < n; x++) {
 							if (g_lvnetcons.GetSelected(x)) {
 								C_Connection *t= (C_Connection*)g_lvnetcons.GetParam(x);
-								if (t) t->deactivate();
-								//g_lvnetcons.DeleteItem(x--);
-								//n--;
+								t->deactivate(0);
 							};
 						};
 						break;
 				};
 				case IDC_REMOVECATCH:
 					{
-						int n=g_lvnetcons.GetCount();
-						int x;
-						for (x = 0; x < n; x++) {
+						log_printf(ds_Informational,"Called REMOVECATCH\n");
+						for (int x = 0; x < g_lvnetcons.GetCount(); x++) {
 							if (g_lvnetcons.GetSelected(x)) {
 								C_Connection *t= (C_Connection*)g_lvnetcons.GetParam(x);
-								if (t) t->deactivate();
-								g_lvnetcons.DeleteItem(x--);
-								n--;
-
-								for(int a=0; a < g_netq.GetSize(); a++){
-									if(t == g_netq.Get(a))
-										g_netq.Del(a);
-								}
-							};
+								t->deactivate(1);
+								x--;
+							}
 						};
 						break;
 					};
 				case IDC_CONNECTCATCH:
 					{
+						log_printf(ds_Informational,"Called CONNECTCATCH\n");
 						int n=g_lvnetcons.GetCount();
 						int x;
-			/* Broken for now
 						for (x = 0; x < n; x++) {
 							if (g_lvnetcons.GetSelected(x)) {
-								if (!g_lvnetcons.GetParam(x)) {
+								C_Connection *t= (C_Connection*)g_lvnetcons.GetParam(x);
+								if (t) t->activate(C_Connection::NOBACKOFF);
+/*								if (!g_lvnetcons.GetParam(x)) {
 									char text[512];
 									unsigned short port;
 									char rat[32];
@@ -943,9 +945,9 @@ void DoPing(C_MessageQueue *mq)
 									g_lvnetcons.DeleteItem(x--);
 									AddConnection(text,port,atoi(rat));
 								};
+*/													
 							};
 						};
-			*/
 						break;
 					};
 				};
