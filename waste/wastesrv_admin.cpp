@@ -138,6 +138,10 @@ static void init(int argc, char * const argv[])
     char c;
 	bool licence = false;
 
+    if(argc == 1){
+    	usage();
+    }
+
     // Get the command name and strip the leading dirpath
     if ( (g_cmdname = strrchr(argv[0], '/')) )
         g_cmdname++;
