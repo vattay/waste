@@ -1,26 +1,58 @@
+; WASTE Delivery System
+
+; Reserve the cutom welcome page for solid compression
+ReserveFile "setup-welcome.ini"
+
+; Define app name variables
 !define APP_NAME_BIG "WASTE"
 !define APP_NAME_VER "WASTE 1.5"
 !define APP_NAME_SMALL "WASTE" ; used for directory name and registry
+
+; Define the name of the main executable
 !define APP_EXENAME "waste.exe"
-; Disable if you don't have upx.exe in the folder
+
+; Choose the name of your UPX executable
 !define HAVE_UPX "upx.exe"
+
+; Filename of installer
 OutFile waste-setup.exe
+
+; Installer icon
 Icon "modern-install.ico"
+
+; Uninstaller icon
 UninstallIcon "modern-uninstall.ico"
+
+; Branding text at bottom of installer
 BrandingText "${APP_NAME_VER}"
+
+; Name of bitmap which contains checkmark images
 CheckBitmap "modern.bmp"
+
 ; Disable below when using NSIS older than 2.x
 XPStyle on
 
+; Installer information
 VIAddVersionKey ProductName "WASTE/DS"
 VIAddVersionKey FileVersion "v1.5 beta 1"
 VIAddVersionKey FileDescription "WASTE Delivery System for ${APP_NAME_VER}"
 VIAddVersionKey LegalCopyright "(C) 2003 Nullsoft, Inc., (C) 2004 WASTE Development Team"
 VIProductVersion 1.5.0.0
 
+; Define what pages to show
+Page custom welcome
+Page license
+Page components
+Page directory
+Page instfiles
+UninstPage uninstConfirm
+UninstPage instfiles
+
+; Name and caption of installer
 Name "${APP_NAME_VER}"
 Caption "${APP_NAME_VER} - Setup"
 
+; License info
 LicenseText "WASTE is free software. Please agree to the license below to continue."
 LicenseData license.txt
 
@@ -35,6 +67,7 @@ SetDateSave on
   !packhdr tmp.dat "upx --force --best tmp.dat"
 !endif
 
+; Change install directory
 InstallDir $PROGRAMFILES\${APP_NAME_SMALL}
 InstallDirRegKey HKLM SOFTWARE\${APP_NAME_SMALL} ""
 
@@ -47,7 +80,7 @@ InstallDirRegKey HKLM SOFTWARE\${APP_NAME_SMALL} ""
 
 ; SOMETHING IS WRONG HERE!
 ; SectionSetFlags is no longer documented
-; This isin't that important anyway. I will fix later
+; This isin't that important anyway. I might fix later, its kind of pointless anyway.
 ; sH4RD
 
 ;Function .onInit
@@ -65,6 +98,21 @@ InstallDirRegKey HKLM SOFTWARE\${APP_NAME_SMALL} ""
 ;
 ;FunctionEnd
 
+Function welcome
+   GetTempFileName $R0
+   File /oname=$R0 setup-welcome.ini
+   InstallOptions::dialog $R0
+   Pop $R1
+   StrCmp $R1 "cancel" done
+   StrCmp $R1 "back" done
+   StrCmp $R1 "success" done
+   MessageBox MB_OK|MB_ICONSTOP "InstallOptions error:$\r$\n$R1"
+   done:
+FunctionEnd
+
+; The following Sections are installed
+
+; Main application, installs for Full and Minimal, is required
 Section "${APP_NAME_BIG} (required)"
   SectionIn 1 2 RO
   SetOutPath $INSTDIR
@@ -74,8 +122,10 @@ Section "${APP_NAME_BIG} (required)"
   CreateDirectory $INSTDIR\Downloads
 SectionEnd
 
+; Sub Section which contains documentation, expanded by default
 SubSection /e Documentation
 
+; PDF Version of Documentation, installs for Full
   Section "PDF Version"
     SectionIn 1
     SetOutPath $INSTDIR\Docs
@@ -85,6 +135,7 @@ SubSection /e Documentation
                    "$INSTDIR\Docs\documentation.pdf"
   SectionEnd
 
+; Link to HTML version of Documentation, installs for Full and Minimal
   Section "HTML Version (Online)"
     SectionIn 1 2
     SetOutPath $INSTDIR\Docs
@@ -94,10 +145,12 @@ SubSection /e Documentation
                    "$INSTDIR\Docs\documentation.html"
   SectionEnd
 
+; End Sub Section Documentation
 SubSectionEnd
 
 ;SubSection /e Options
 
+; Installs the Start Menu shortcuts, installs for Full and Minimal
   Section "Start Menu shortcuts"
     SectionIn 1 2
     CreateDirectory $SMPROGRAMS\${APP_NAME_BIG}
@@ -111,6 +164,7 @@ SubSectionEnd
                    "$INSTDIR\downloads"
   SectionEnd
 
+; Installs a shortcut to launch on startup, installs for Full
   Section "Launch on startup"
     SectionIn 1
     CreateShortCut "$SMSTARTUP\${APP_NAME_BIG}.lnk" \
@@ -119,6 +173,7 @@ SubSectionEnd
 
 ;SubSectionEnd
 
+; This runs after the post install
 Section -post
 
   WriteRegStr HKLM SOFTWARE\${APP_NAME_SMALL} "" $INSTDIR
@@ -129,9 +184,19 @@ Section -post
   WriteRegStr HKCR WASTESTATE\DefaultIcon "" "$INSTDIR\WASTE.exe,1"
   WriteRegStr HKCR waste\shell\open\command "" '"$INSTDIR\waste.exe" "%1"'
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SMALL}" \
-                   "DisplayName" "${APP_NAME_BIG} (remove only)"
+                   "DisplayName" "${APP_NAME_BIG}"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SMALL}" \
                    "UninstallString" '"$INSTDIR\uninst.exe"'
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SMALL}" \
+                   "HelpLink" "http://sourceforge.net/forum/forum.php?forum_id=281190"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SMALL}" \
+                   "URLInfoAbout" "http://waste.sf.net"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SMALL}" \
+                   "NoModify" 1
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SMALL}" \
+                   "NoRepair" 1
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SMALL}" \
+                   "Publisher" "WASTE Development Team"
 
 
   ; since the installer is now created last (in 1.2+), this makes sure 
@@ -140,8 +205,19 @@ Section -post
   WriteUninstaller $INSTDIR\uninst.exe
 SectionEnd
 
+; If install is sucessful, this executes WASTE to complete setup.
 Function .onInstSuccess
+  IfFileExists "$INSTDIR\default.pr0" 0 RunIt
+  IfFileExists "$INSTDIR\default.pr1" 0 RunIt
+  IfFileExists "$INSTDIR\default.pr2" 0 RunIt
+  IfFileExists "$INSTDIR\default.pr3" 0 RunIt
+  IfFileExists "$INSTDIR\default.pr4" DontRunIt RunIt
+  RunIt:
   Exec '"$INSTDIR\${APP_EXENAME}"'
+  Goto Exit
+  DontRunIt:
+  MessageBox MB_YESNO|MB_ICONQUESTION "${APP_NAME_VER} Installed sucessfully, would you like to start WASTE?" IDYES RunIt
+  Exit:
 FunctionEnd
 
 !ifndef NO_UNINST
