@@ -1061,9 +1061,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPSTR lpszC
 
 	if (!g_key.bits) {
 		reloadKey(
-			g_config->ReadInt(CONFIG_storepass,CONFIG_storepass_DEFAULT)?
-			g_config->ReadString(CONFIG_keypass,CONFIG_keypass_DEFAULT):
-			NULL,
+			g_config->ReadInt(CONFIG_storepass,CONFIG_storepass_DEFAULT),
+			g_config->ReadString(CONFIG_keypass,CONFIG_keypass_DEFAULT),
 			GetDesktopWindow()
 			);
 	};

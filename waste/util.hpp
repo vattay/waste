@@ -89,14 +89,14 @@ void removeInvalidFNChars(char *filename); //careful, removes colons too, so
 
 #if _DEFINE_WIN32_CLIENT
 
-int doLoadKey(HWND hwndParent, const char *pstr, const char *keyfn, R_RSA_PRIVATE_KEY *key);
+int doLoadKey(HWND hwndParent, const unsigned char passhash[SHA_OUTSIZE], const char *keyfn, R_RSA_PRIVATE_KEY *key);
 int kg_writePrivateKey(char *fn, R_RSA_PRIVATE_KEY *key, R_RANDOM_STRUCT *rnd, char *passhash);
-void reloadKey(const char *passstr, HWND hwndParent);
+void reloadKey(int type, char *passstr, HWND hwndParent);
 
 #else
 
-int doLoadKey(const char *pstr, const char *keyfn, R_RSA_PRIVATE_KEY *key);
-void reloadKey(const char *passstr);
+int doLoadKey(const unsigned char passhash[SHA_OUTSIZE], const char *keyfn, R_RSA_PRIVATE_KEY *key);
+void reloadKey(int type, char *passstr);
 
 #endif
 

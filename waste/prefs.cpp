@@ -2742,7 +2742,7 @@ static BOOL CALLBACK Pref_SecurityProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,LP
 			};
 		case IDC_RELOADKEY:
 			{
-				reloadKey(NULL,hwndDlg);
+				reloadKey(0, NULL,hwndDlg);
 				SendMessage(hwndDlg,WM_USER+0x109,0,0);
 				return 0;
 			};
@@ -2834,7 +2834,7 @@ static BOOL CALLBACK Pref_SecurityProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,LP
 						char str[1024];
 						sprintf(str,"%s.pr4",g_config_prefix);
 						CopyFile(temp,str,FALSE);
-						reloadKey(NULL,hwndDlg);
+						reloadKey(0, NULL,hwndDlg);
 						SendMessage(hwndDlg,WM_USER+0x109,0,0);
 					};
 				};
@@ -3106,7 +3106,7 @@ static BOOL WINAPI SW_Proc4(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM /*lPa
 		FILE *fp=fopen(str,"rb");
 		if (fp) {
 			fclose(fp);
-			if (!g_key.bits) reloadKey(NULL,hwndDlg);
+			if (!g_key.bits) reloadKey(0, NULL,hwndDlg);
 		};
 		SendMessage(hwndDlg,WM_USER+0x132,0,0);
 	};
@@ -3167,7 +3167,7 @@ static BOOL WINAPI SW_Proc4(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM /*lPa
 					char str[1024];
 					sprintf(str,"%s.pr4",g_config_prefix);
 					CopyFile(temp,str,FALSE);
-					reloadKey(NULL,hwndDlg);
+					reloadKey(0, NULL,hwndDlg);
 					SendMessage(hwndDlg,WM_USER+0x132,0,1);
 				};
 				return 0;

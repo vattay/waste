@@ -40,19 +40,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 extern const char szDotWastestate[]=".WASTESTATE";
 extern const char szWastestate[]   ="WASTESTATE";
 
-//////guid
-
-void CreateID128(T_GUID *id)
-{
-	R_GenerateBytes((unsigned char *)id->idc, 16, &g_random);
-}
-
-void MakeID128Str(T_GUID *id, char *str)
-{
-	Bin2Hex(str,id->idc,sizeof(id->idc));
-}
-
-#ifdef _DEBUG
+#if defined(_WIN32) && defined(_DEBUG)
 	char* dbgstrdup(const char*str,const char *file, unsigned int line)
 	{
 		if (!str) return NULL;
@@ -63,24 +51,7 @@ void MakeID128Str(T_GUID *id, char *str)
 	}
 #endif
 
-int MakeID128FromStr(const char *str, T_GUID *id)
-{
-	int x;
-	const char *p=str;
-	for (x = 0; x < 16; x ++) {
-		int h=*p++;
-		int l=*p++;
-		if (l >= '0' && l <= '9') l-='0';
-		else if (l >= 'A' && l <= 'F') l -= 'A'-10;
-		else return 1;
-		if (h >= '0' && h <= '9') h-='0';
-		else if (h >= 'A' && h <= 'F') h -= 'A'-10;
-		else return 1;
-		id->idc[x]=(unsigned char)((l|(h<<4))&0xff);
-	};
-	return 0;
-}
-
+// hex <=> binary conversion routines
 inline void Bin2Hex_Single(char* buf,char inp)
 {
 	char c1,c2;
@@ -120,6 +91,54 @@ char* Bin2Hex_Lf(char* output, unsigned char* input, int len, int &perline, int 
 	};
 	*output=0;
 	return output;
+}
+
+static inline unsigned Hex2Bin_nibble(char c)
+{
+	unsigned t = tolower(c) - '0';
+	if (t > 9) {
+		t += '0' - 'a';	// add the '0' back in and subtract an 'a'
+		if (t <= 0xf - 0xa)
+			t += 0xa;
+		else
+			return (unsigned) -1;
+	}
+	return t;
+}
+
+unsigned char *
+Hex2Bin(unsigned char *dst, const char *src, size_t dstlen)
+{
+	unsigned char *cp = dst;
+
+	for (unsigned i = 0; i < dstlen; i++) {
+		 unsigned byte = Hex2Bin_nibble(*src++);
+		 if ( !(byte + 1) )	// if byte == -1
+			 return 0;
+		 byte = (byte << 4) | Hex2Bin_nibble(*src++);
+		 if ( !(byte + 1) )	// if byte == -1
+			 return 0;
+		 *cp++ = byte;
+	}
+
+	return dst;
+}
+
+//////guid
+
+void CreateID128(T_GUID *id)
+{
+	R_GenerateBytes((unsigned char *)id->idc, 16, &g_random);
+}
+
+void MakeID128Str(T_GUID *id, char *str)
+{
+	Bin2Hex(str,id->idc,sizeof(id->idc));
+}
+
+int MakeID128FromStr(const char *str, T_GUID *id)
+{
+	return (Hex2Bin(&id->idc[0], str, sizeof(id->idc)) < 0);
 }
 
 ///rng
@@ -529,33 +548,22 @@ BOOL WINAPI PassWordProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM /*lParam
 
 #endif
 
-static int readEncodedChar(FILE *in) //returns -1 on error
+static int readEncodedChar(FILE *in) // returns -1 on error
 {
-	char buf[2];
-	int ret;
-	do buf[0]=(char)(fgetc(in)&0xff);
-	while (buf[0] == '\n' ||
-		buf[0] == '\r' ||
-		buf[0] == '\t' ||
-		buf[0] == ' ' ||
-		buf[0] == '-' ||
-		buf[0] == '_' ||
-		buf[0] == '>' ||
-		buf[0] == '<' ||
-		buf[0] == ':' ||
-		buf[0] == '|'
-		);
-	buf[1]=(char)(fgetc(in)&0xff);
+	static const char ignorelist[] = "\n\r\t -_<>:|";
+    int c;
 
-	if (buf[0] >= '0' && buf[0] <= '9') ret=(buf[0]-'0')<<4;
-	else if (buf[0] >= 'A' && buf[0] <= 'F') ret=(buf[0]-'A'+10)<<4;
-	else return -1;
+    do {
+		if (EOF == (c = fgetc(in)))
+			return -1;
+	} while (strchr(ignorelist, (char) c));
 
-	if (buf[1] >= '0' && buf[1] <= '9') ret+=(buf[1]-'0');
-	else if (buf[1] >= 'A' && buf[1] <= 'F') ret+=(buf[1]-'A'+10);
-	else return -1;
+	// Get high nibble
+	int  byte = (int) Hex2Bin_nibble(c);
+	if (byte < 0 || (EOF == (c = fgetc(in))))
+		return -1;
 
-	return ret;
+	return (byte << 4) | Hex2Bin_nibble(c);
 }
 
 static int readBFdata(FILE *in, CBlowfish *bl, void *data, unsigned int len)
@@ -571,20 +579,16 @@ static int readBFdata(FILE *in, CBlowfish *bl, void *data, unsigned int len)
 }
 
 #if _DEFINE_WIN32_CLIENT
-int doLoadKey(HWND hwndParent, const char *pstr, const char *keyfn, R_RSA_PRIVATE_KEY *key)
+int doLoadKey(HWND hwndParent, const unsigned char passhash[SHA_OUTSIZE], const char *keyfn, R_RSA_PRIVATE_KEY *key)
 #else
-int doLoadKey(const char *pstr, const char *keyfn, R_RSA_PRIVATE_KEY *key)
+int doLoadKey(const unsigned char passhash[SHA_OUTSIZE], const char *keyfn, R_RSA_PRIVATE_KEY *key)
 #endif
 {
 	int goagain=0;
-	SHAify m;
-	m.add((unsigned char *)pstr,strlen(pstr));
-	unsigned char tmp[SHA_OUTSIZE];
-	m.final(tmp);
 
 	CBlowfish bl;
 	//BLOWFISH_CTX bf;
-	bl.Init(tmp,SHA_OUTSIZE);
+	bl.Init(passhash,SHA_OUTSIZE);
 
 	FILE *fp;
 	if ((fp=fopen(keyfn,"rt"))==NULL) {
@@ -671,12 +675,16 @@ int doLoadKey(const char *pstr, const char *keyfn, R_RSA_PRIVATE_KEY *key)
 }
 
 #if _DEFINE_WIN32_CLIENT
-	void reloadKey(const char *passstr, HWND hwndParent)
+	void reloadKey(int type, char *passstr, HWND hwndParent)
 #else
-	void reloadKey(const char *passstr)
+	// type can be 0 for no store pass, clear string
+	// 1 for password in the clear, needs hashing
+	// 2 for hashed key
+	void reloadKey(int type, char *passstr)
 #endif
 {
 	int retry=10;
+	unsigned char passhash[SHA_OUTSIZE];
 	#if !_DEFINE_WIN32_CLIENT
 		char tmp_passbuf[256];
 	#endif
@@ -691,25 +699,44 @@ int doLoadKey(const char *pstr, const char *keyfn, R_RSA_PRIVATE_KEY *key)
 				g_key.bits=0;
 				memset(g_pubkeyhash,0,sizeof(g_pubkeyhash));
 				return;
-			};
+			}
 			passstr=tmp_passbuf;
-		};
-	#else
-		if (!passstr) {
+			type = 0;
+		}
+	#elif _WIN32
+		if (type == 0 || !passstr) {
 	giveitanothergo:
 			log_printf(ds_Console,"\nPassword: ");
 			fgets(tmp_passbuf,sizeof(tmp_passbuf),stdin);
 			if (tmp_passbuf[0] && tmp_passbuf[strlen(tmp_passbuf)-1] == '\n') {
 				tmp_passbuf[strlen(tmp_passbuf)-1]=0;
-			};
+			}
 			passstr=tmp_passbuf;
-		};
+			type = 0;
+		}
+	#else
+		if (type == 0 || !passstr) {
+	giveitanothergo:
+			readpassphrase("Passphrase: ", tmp_passbuf, sizeof(tmp_passbuf), 0);
+			passstr = tmp_passbuf;
+		}
 	#endif
 
+	if (type == 2)
+		Hex2Bin(passhash, passstr, sizeof(passhash));
+	else {
+		// need to hash the key
+		SHAify m;
+
+		m.add((unsigned char *)passstr,strlen(passstr));
+		m.final(passhash);
+		memset(passstr, 0, strlen(passstr));
+	}
+
 	#if _DEFINE_WIN32_CLIENT
-		int ret=doLoadKey(hwndParent,passstr,keyfn,&g_key);
+		int ret=doLoadKey(hwndParent,passhash,keyfn,&g_key);
 	#else
-		int ret=doLoadKey(passstr,keyfn,&g_key);
+		int ret=doLoadKey(passhash,keyfn,&g_key);
 	#endif
 	if (ret) {
 		if (ret == 2) {
@@ -721,10 +748,10 @@ int doLoadKey(const char *pstr, const char *keyfn, R_RSA_PRIVATE_KEY *key)
 				g_key.bits=0;
 				memset(g_pubkeyhash,0,sizeof(g_pubkeyhash));
 				return;
-			};
-		};
+			}
+		}
 		return;
-	};
+	}
 
 	SHAify m;
 

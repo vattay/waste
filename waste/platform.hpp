@@ -80,15 +80,42 @@ static inline unsigned int   htolui(unsigned int   a) { return a; }
 #include <assert.h>
 
 // Some *nix dependant includes and definitions
+//
+// Really should be _HAVE_READPASSPHRASE based with autoconf
+#if __gnu_linux__
+static inline char *
+readpassphrase(const char *prompt, char *buf, size_t bufsz, int /* flags */)
+{
+    char *passwd = getpass(prompt);
+
+	if (passwd) {
+		strncpy(buf, passwd, bufsz);
+		bzero(passwd, strlen(buf));
+		return buf;
+	}
+
+	return NULL;
+}
+#define PASS_MAX 128
+
+#include <byteswap.h>
+#else // Probably BSD based 
+
+#include <readpassphrase.h>
+
 #if __APPLE__
 #include <architecture/byte_order.h>
 #define WASTE_CONFIG_DIR "~/Library/Waste/"
-#else // __gnu_linux__
+#endif 
+
+#endif // __gnu_linux__
+
+#ifndef WASTE_CONFIG_DIR
 #define WASTE_CONFIG_DIR "~/.waste/"
-#include <byteswap.h>
 #endif
 
 #define DIRCHAR '/'
+#define PATHSEP ':'
 #define CharNext(x) (x+1)
 #define CharPrev(s,x) ((s)<(x)?(x)-1:(s))
 #define DeleteFile(x) unlink(x)
