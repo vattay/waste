@@ -1,5 +1,5 @@
 !define APP_NAME_BIG "WASTE"
-!define APP_NAME_VER "WASTE 1.5 Beta 2"
+!define APP_NAME_VER "WASTE 1.5"
 !define APP_NAME_SMALL "WASTE" ; used for directory name and registry
 !define APP_EXENAME "waste.exe"
 ; Disable if you don't have upx.exe in the folder
