@@ -65,7 +65,8 @@ static void ListenToSocket()
 			}
 			else {
 				c->send_bytes(g_con_str,SYNC_SIZE);
-				#if _DEFINE_WIN32_CLIENT
+				#if 0 
+				//_DEFINE_WIN32_CLIENT
 					struct in_addr in;
 					in.s_addr=addr;
 					char *a=inet_ntoa(in);
@@ -106,7 +107,8 @@ void NetKern_ConnectToHostIfOK(unsigned long ip, unsigned short port)
 		};
 	};
 
-	#if _DEFINE_WIN32_CLIENT
+	#if 0 
+	//_DEFINE_WIN32_CLIENT
 		int netqpos=-1;
 		int i,l;
 		l=g_lvnetcons.GetCount();
@@ -131,7 +133,8 @@ void NetKern_ConnectToHostIfOK(unsigned long ip, unsigned short port)
 		newcon->send_bytes(g_con_str,SYNC_SIZE);
 		g_new_net.Add(newcon);
 
-		#if _DEFINE_WIN32_CLIENT
+		#if 0 
+		//_DEFINE_WIN32_CLIENT
 			if (netqpos<0) {
 				char buf[1024];
 				sprintf(buf,"%s:%d",text,(int)(unsigned short)port);
@@ -190,11 +193,8 @@ void RebroadcastCaps(C_MessageQueueList *mql) //sends a local message to every h
 static void HandleNewOutCons()
 {
 
-	//Turning this all off for now. Will implement the guts of this lower down,
-	// but still need to recreate the GUI code
-	#if 0
-	
-	#if _DEFINE_WIN32_CLIENT
+	#if  0
+	//_DEFINE_WIN32_CLIENT
 		static unsigned int next_runitem;
 
 		int a=GetTickCount()-next_runitem;
@@ -272,15 +272,15 @@ static void HandleNewOutCons()
 		};
 	#endif// _DEFINE_WIN32_CLIENT
 
-	#endif // 0  
-
 	//Process activated connections
 	int x;
 	for (x = 0; x < g_new_net.GetSize(); x ++) {
 		C_Connection *cc=g_new_net.Get(x);
 		int s=cc->run(-1,-1);
 		if (s == C_Connection::STATE_DIENOW) {
-			#if _DEFINE_WIN32_CLIENT
+
+			#if 0 
+			//_DEFINE_WIN32_CLIENT
 				int a=g_lvnetcons.FindItemByParam((int)cc);
 				if (a >= 0) {
 					g_lvnetcons.DeleteItem(a);
@@ -297,7 +297,8 @@ static void HandleNewOutCons()
 			#endif
 		}
 		else if (s == C_Connection::STATE_CLOSED || s == C_Connection::STATE_ERROR) {
-			#if _DEFINE_WIN32_CLIENT
+			#if 0
+			//_DEFINE_WIN32_CLIENT
 				unsigned short port=cc->get_remote_port();
 				int irat=0;
 				int a=g_lvnetcons.FindItemByParam((int)g_new_net.Get(x));
@@ -346,7 +347,8 @@ static void HandleNewOutCons()
 			char b[SYNC_SIZE];
 			cc->recv_bytes(b,SYNC_SIZE);
 			if (!cc->PopRandomCrap()) {
-				#if _DEFINE_WIN32_CLIENT
+				#if 0 
+				//_DEFINE_WIN32_CLIENT
 					int a=g_lvnetcons.FindItemByParam((int)cc);
 					if (a >= 0) {
 						g_lvnetcons.DeleteItem(a);
@@ -355,12 +357,14 @@ static void HandleNewOutCons()
 				log_printf(ds_Error,"Cannot pop random crap. Bad shit happened!");
 				cc->deactivate();
 				g_new_net.Del(x--);
-				#if _DEFINE_WIN32_CLIENT
+				#if 0
+				//_DEFINE_WIN32_CLIENT
 					PostMessage(g_netstatus_wnd,WM_USER_TITLEUPDATE,0,0);
 				#endif
 			}
 			else if (memcmp(b,g_con_str,SYNC_SIZE)) {
-				#if _DEFINE_WIN32_CLIENT
+				#if 0
+				//_DEFINE_WIN32_CLIENT
 					int a=g_lvnetcons.FindItemByParam((int)cc);
 					if (a >= 0) {
 						g_lvnetcons.DeleteItem(a);
@@ -418,7 +422,8 @@ static void HandleNewOutCons()
 						if (in1>0 && numincons>=in1) {
 							log_printf(ds_Warning,"Limiter: Host %s as %s cannot connect, because incoming connection limit is reached!",ad,descstr_l);
 						};
-						#if _DEFINE_WIN32_CLIENT
+						#if 0
+						//_DEFINE_WIN32_CLIENT
 							int a=g_lvnetcons.FindItemByParam((int)cc);
 							if (a >= 0) {
 								g_lvnetcons.DeleteItem(a);
@@ -434,7 +439,8 @@ static void HandleNewOutCons()
 				};
 
 				if (allowconnection) {
-					#if _DEFINE_WIN32_CLIENT
+					#if 0
+					//_DEFINE_WIN32_CLIENT
 						int a=g_lvnetcons.FindItemByParam((int)cc);
 						if (a >= 0) {
 							char newconstr[512];
@@ -467,7 +473,8 @@ static void HandleNewOutCons()
 					g_mql->AddMessageQueue(newq);
 					DoPing(newq);
 					g_new_net.Del(x--);
-					#if _DEFINE_WIN32_CLIENT
+					#if 0
+					//_DEFINE_WIN32_CLIENT
 						PostMessage(g_netstatus_wnd,WM_USER_TITLEUPDATE,0,0);
 					#endif
 				};
@@ -510,10 +517,15 @@ Code moved to C_Connection::activate
 	#if _DEFINE_WIN32_CLIENT
 		char str2[512];
 		sprintf(str2,"%s:%d",str,(int)(unsigned short)port);
-		g_lvnetcons.InsertItem(0,"Connecting",(int)newcon);
+		g_lvnetcons.InsertItem(0,"Inactive",(int)newcon);
 		g_lvnetcons.SetItemText(0,1,str2);
 		sprintf(str2,"%d",rating);
 		g_lvnetcons.SetItemText(0,2,str2);
+		if(newcon->get_keep())
+			g_lvnetcons.SetItemText(0,2,"Keep");
+		else
+			g_lvnetcons.SetItemText(0,2,"Temp");
+
 	#endif
 	return newcon;
 }
@@ -660,11 +672,17 @@ void DoPing(C_MessageQueue *mq)
 		case WM_TIMER:
 			{
 				if (IsWindowVisible(hwndDlg)) {
-					int l=g_lvnetcons.GetCount();
-					int x;
-					for (x = 0; x < l; x ++) {
-						C_Connection *thiscon = (C_Connection *)g_lvnetcons.GetParam(x);
-						if (thiscon && thiscon->was_ever_connected()) {
+
+					for(int x = 0; x < g_netq.GetSize(); x++){
+						C_Connection *thiscon = g_netq.Get(x);
+						int a=g_lvnetcons.FindItemByParam((int)thiscon);
+						switch(thiscon->get_state()){
+
+						case C_Connection::STATE_CONNECTING:
+							g_lvnetcons.SetItemText(a,0,"Connecting...");
+							break;
+						case C_Connection::STATE_CONNECTED:
+						case C_Connection::STATE_IDLE:
 							char str[128];
 							int sbps, rbps;
 							thiscon->get_last_bps(&sbps,&rbps);
@@ -673,7 +691,7 @@ void DoPing(C_MessageQueue *mq)
 								sbps/1024,((sbps*10)/1024)%10,
 								rbps/1024,((rbps*10)/1024)%10);
 							if (g_extrainf) {
-								for (int n=g_mql->GetNumQueues()-1; n >= 0; n --) {
+								for (int n=g_mql->GetNumQueues()-1; n >= 0; n --){
 									C_MessageQueue *q=g_mql->GetQueue(n);
 									if (thiscon == q->get_con()) {
 										sprintf(str+strlen(str), " (%d,%d,%d)",
@@ -684,10 +702,26 @@ void DoPing(C_MessageQueue *mq)
 									};
 								};
 							};
+							g_lvnetcons.SetItemText(a,0,str);
+							break;
+						}
+						char hostnport[MAX_HOST_LENGTH+6];
+						thiscon->get_remote_host(hostnport, MAX_HOST_LENGTH);
+						sprintf(hostnport, "%s:%hu", hostnport,thiscon->get_remote_port());
+						g_lvnetcons.SetItemText(a,1,hostnport);
+						if(thiscon->get_keep())
+							g_lvnetcons.SetItemText(a,2,"Keep");
+						else
+							g_lvnetcons.SetItemText(a,2,"Temp");
 
-							g_lvnetcons.SetItemText(x,0,str);
-						};
+						char descstr_l[16+SHA_OUTSIZE*2+32];
+						char descstr_s[16+SHA_OUTSIZE*2+32];
+						MakeUserStringFromHash(thiscon->get_remote_pkey_hash(),descstr_l,descstr_s);
+						if (g_extrainf==1) g_lvnetcons.SetItemText(a,3,descstr_l);
+						else g_lvnetcons.SetItemText(a,3,descstr_s);
+							
 					};
+						
 				};
 				return 0;
 			};
@@ -858,7 +892,7 @@ void DoPing(C_MessageQueue *mq)
 						for (x = 0; x < n; x++) {
 							if (g_lvnetcons.GetSelected(x)) {
 								C_Connection *t= (C_Connection*)g_lvnetcons.GetParam(x);
-								if (t) t->close(1);
+								if (t) t->deactivate();
 								//g_lvnetcons.DeleteItem(x--);
 								//n--;
 							};
@@ -872,9 +906,14 @@ void DoPing(C_MessageQueue *mq)
 						for (x = 0; x < n; x++) {
 							if (g_lvnetcons.GetSelected(x)) {
 								C_Connection *t= (C_Connection*)g_lvnetcons.GetParam(x);
-								if (t) t->close(1);
+								if (t) t->deactivate();
 								g_lvnetcons.DeleteItem(x--);
 								n--;
+
+								for(int a=0; a < g_netq.GetSize(); a++){
+									if(t == g_netq.Get(a))
+										g_netq.Del(a);
+								}
 							};
 						};
 						break;
@@ -883,6 +922,7 @@ void DoPing(C_MessageQueue *mq)
 					{
 						int n=g_lvnetcons.GetCount();
 						int x;
+			/* Broken for now
 						for (x = 0; x < n; x++) {
 							if (g_lvnetcons.GetSelected(x)) {
 								if (!g_lvnetcons.GetParam(x)) {
@@ -905,6 +945,7 @@ void DoPing(C_MessageQueue *mq)
 								};
 							};
 						};
+			*/
 						break;
 					};
 				};

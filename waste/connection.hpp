@@ -100,6 +100,7 @@ public:
 	void set_keep(char keep){ m_keep = keep; }
 	char get_keep(){ return m_keep; }
 	void set_good(){ m_last_success = time(NULL); m_incomplete_attempts = 0; }
+	state get_state(){ return m_state; }
 
 	state run(int max_send_bytes, int max_recv_bytes);
 
