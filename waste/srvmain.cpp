@@ -168,8 +168,6 @@ void main_AddNodes(){
 
 int main(int argc, char **argv)
 {
-	SetProgramDirectory(argv[0]);
-
 	g_log_level=ds_Console;
 	_logfile=stderr;
 
@@ -223,7 +221,7 @@ int main(int argc, char **argv)
 				"Usage: wastesrv <-i> | -d <logfile>\n"
 				"\t -L print license\n"
 				"\t -i interactive mode\n"
-				"\t -d daemon mode (on linux this will put wastesrv in the background)\n"
+				"\t -d daemon mode (on *nix this will put wastesrv in the background)\n"
 				"\n"
 				"\twastesrv.ini must to be present on Windows\n"
 				"\tthe config is default.pr0 to default.pr4\n",
@@ -235,6 +233,9 @@ int main(int argc, char **argv)
 		};
 	};
 
+	// TODO: gvdl should take a directory argument
+	SetProgramDirectory(argv[0]);
+
 	installsighandler();
 
 	log_printf(ds_Console,"%s starting up...",g_nameverstr);
@@ -242,7 +243,9 @@ int main(int argc, char **argv)
 	MYSRAND();
 	if (!g_exit) //emergency break!
 	{
+		// TODO: gvdl should take a profile argument
 		strcat(g_config_prefix,"default");
+
 
 		#ifdef _WIN32
 			WSADATA wsaData;

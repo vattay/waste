@@ -79,7 +79,7 @@ further messages are verified with a MD5 to detect tampering.
 
 */
 
-#include "stdafx.hpp"
+#include "platform.hpp"
 
 #include "main.hpp"
 #include "rsa/md5.hpp"
@@ -978,7 +978,7 @@ void main_onGotNick(const char *nick, int del)
 	#endif
 }
 
-void InitNeworkHash()
+void InitNetworkHash()
 {
 	const char *buf=g_config->ReadString(CONFIG_networkname,CONFIG_networkname_DEFAULT);
 	if (buf[0]) {
@@ -1042,19 +1042,18 @@ void UnifiedReadConfig(bool isreload)
 	g_throttle_send=g_config->ReadInt(CONFIG_throttlesend,CONFIG_throttlesend_DEFAULT);
 	g_throttle_recv=g_config->ReadInt(CONFIG_throttlerecv,CONFIG_throttlerecv_DEFAULT);
 
-	if (!isreload) {
-		#if _DEFINE_WIN32_CLIENT
-			const char* performstmp = g_config->ReadString(CONFIG_performs,CONFIG_performs_DEFAULT);
-			safe_strncpy(g_performs, performstmp, sizeof(g_performs));
-		#endif
-	};
+#if _DEFINE_WIN32_CLIENT
 
-	#if _DEFINE_WIN32_CLIENT
-		g_appendprofiletitles=g_config->ReadInt(CONFIG_appendpt,CONFIG_appendpt_DEFAULT);
-		g_extrainf=g_config->ReadInt(CONFIG_extrainf,CONFIG_extrainf_DEFAULT);
-		g_search_showfull=g_config->ReadInt(CONFIG_search_showfull,CONFIG_search_showfull_DEFAULT);
-		g_search_showfullbytes=g_config->ReadInt(CONFIG_search_showfullb,CONFIG_search_showfullb_DEFAULT);
-	#endif
+	if (!isreload) {
+		const char* performstmp = g_config->ReadString(CONFIG_performs,CONFIG_performs_DEFAULT);
+		safe_strncpy(g_performs, performstmp, sizeof(g_performs));
+	}
+
+	g_appendprofiletitles=g_config->ReadInt(CONFIG_appendpt,CONFIG_appendpt_DEFAULT);
+	g_extrainf=g_config->ReadInt(CONFIG_extrainf,CONFIG_extrainf_DEFAULT);
+	g_search_showfull=g_config->ReadInt(CONFIG_search_showfull,CONFIG_search_showfull_DEFAULT);
+	g_search_showfullbytes=g_config->ReadInt(CONFIG_search_showfullb,CONFIG_search_showfullb_DEFAULT);
+#endif
 
 	g_chat_timestamp=g_config->ReadInt(CONFIG_chat_timestamp,CONFIG_chat_timestamp_DEFAULT);
 
@@ -1062,10 +1061,11 @@ void UnifiedReadConfig(bool isreload)
 	if (g_regnick[0] == '#' || g_regnick[0] == '&') g_regnick[0]=0;
 
 	InitReadClientid();
-	InitNeworkHash();
+	InitNetworkHash();
 	updateACList(NULL);
 }
 
+// TODO: gvdl should be used to set up all of the configuration paths
 void SetProgramDirectory(const char *progpath)
 {
 	char *p;
@@ -1073,30 +1073,36 @@ void SetProgramDirectory(const char *progpath)
 	#ifdef _WIN32
 		{
 			progpath;
-			GetModuleFileName(NULL,g_config_dir,sizeof(g_config_dir));
-		};
+			GetModuleFileName(NULL, g_config_dir, sizeof(g_config_dir));
+			safe_strncpy(g_config_mainini, g_config_dir, sizeof(g_config_mainini));
+			p=g_config_mainini+strlen(g_config_mainini);
+			while (p >= g_config_mainini && *p != '.' && *p != DIRCHAR) p--;
+			*++p=0;
+			strcat(g_config_mainini, "ini");
+		}
 	#else
-		{
-			safe_strncpy(g_config_dir,progpath,sizeof(g_config_dir));
-		};
+		// Look for a waste directory first, if that fails back onto
+		// the original program directory
+		const char *home = getenv("HOME");
+		if (home) {
+			struct stat statbuf;
+
+			snprintf(g_config_dir, sizeof(g_config_dir),
+								"%s%s", home, &WASTE_CONFIG_DIR[1]);
+			// See if the path exists & it is a directory
+			if (-1 == stat(g_config_dir, &statbuf)
+			|| (statbuf.st_mode & S_IFMT) == S_IFDIR)
+				g_config_dir[0] = 0;	// didn't find the directory
+
+		}
+		if (!g_config_dir[0])
+			safe_strncpy(g_config_dir, progpath, sizeof(g_config_dir));
 	#endif
 
-	#ifdef _WIN32
-		safe_strncpy(g_config_mainini,g_config_dir,sizeof(g_config_mainini));
-	#endif
 
-	p=g_config_dir+strlen(g_config_dir);
-	while (p >= g_config_dir && *p != DIRCHAR) p--;
-	*++p=0;
-
-	#ifdef _WIN32
-		p=g_config_mainini+strlen(g_config_mainini);
-		while (p >= g_config_mainini && *p != '.' && *p != DIRCHAR) p--;
-		*++p=0;
-		strcat(g_config_mainini,"ini");
-	#endif
-
-	safe_strncpy(g_config_prefix,g_config_dir,sizeof(g_config_prefix));
+	p = strrchr(g_config_dir, DIRCHAR);
+	*++p = 0;
+	safe_strncpy(g_config_prefix, g_config_dir, sizeof(g_config_prefix));
 }
 
 void InitializeNetworkparts()
