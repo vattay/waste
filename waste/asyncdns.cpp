@@ -107,7 +107,7 @@ void C_AsyncDNS::invalidate(char *hostname)
 	int x;
 	for(x = 0; x < m_cache_size; x ++) {
 		if (!stricmp(m_cache[x].hostname,hostname)){
-			memset(m_cache[x], 0, sizeof(cache_entry));
+			memset(&m_cache[x], 0, sizeof(cache_entry));
 			return;
 		}
 	}
