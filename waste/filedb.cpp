@@ -106,17 +106,18 @@ void C_FileDB::Scan(const char *pathlist)
 	unsigned int len=strlen(path_buf);
 	if (len==sizeof(path_buf)-1) {
 		char *p=path_buf+len-1;
-		while ((p>path_buf)&&(*p!=';')) p--;
+		while ((p>path_buf)&&((*p!=';')||(*p!=':')))
+			p--;
 		*p=0;
 	};
 
 	char *p=path_buf;
 	while (p && *p) {
 		char *lp=p;
-		p=strstr(p,";");
-		if (p) {
-			if (*p) *p++=0;
-		};
+		p += strcspn(p, ";:");
+		if (*p == ';' || *p == ':') {
+			*p++ = 0;
+		}
 
 		ScanType i;
 		#ifdef _WIN32
