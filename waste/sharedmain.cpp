@@ -1091,7 +1091,8 @@ void SetProgramDirectory(const char *progpath)
 								"%s%s", home, &WASTE_CONFIG_DIR[1]);
 			// See if the path exists & it is a directory
 			if (-1 == stat(g_config_dir, &statbuf)
-			|| (statbuf.st_mode & S_IFMT) == S_IFDIR)
+			|| (statbuf.st_mode & S_IFMT) != S_IFDIR)
+			//Note to gvdl: nite613 found the S_IFDIR test to be backwards, did it work for you?!?!
 				g_config_dir[0] = 0;	// didn't find the directory
 
 		}

@@ -434,7 +434,7 @@ C_Connection::~C_Connection()
 	m_fish_recv.Final();
 	memset(m_mykeyinfo.raw,0,sizeof(m_mykeyinfo.raw));
 	//If an outbound connection is dying and we never successfully connected, invalidate DNS cache entries for this host
-	if(m_host && !m_ever_connected)
+	if(m_dns && m_host && !m_ever_connected)
 		m_dns->invalidate(m_host);
 	else{
 		char descstr_s[16+SHA_OUTSIZE*2+32];
