@@ -3,13 +3,13 @@ OBJS = asyncdns.o blowfish.o config.o connection.o d_chat.o filedb.o license.o \
        m_upload.o mqueue.o mqueuelist.o netkern.o sha.o sharedmain.o shbuf.o \
        srchwnd.o srvmain.o util.o xfers.o xferwnd.o 
 
-ADMIN_OBJS = blowfish.o license.o sha.o  wastesrv_admin.o
+ADMIN_OBJS = blowfish.o config.o license.o sha.o  wastesrv_admin.o
 
 RSA_OBJS = rsa/md5.o rsa/nn.o rsa/prime.o rsa/r_keygen.o rsa/r_random.o \
 	   rsa/rsa.o
 
 DEPLOY_FLAGS = -s -O2 -DNODEBUG -DNDEBUG -march=pentiumpro
-DEVELOP_FLAGS = -g -O0 -DDEBUG -march=pentiumpro
+DEVELOP_FLAGS = -g -O0 -DDEBUG -D_DEBUG -march=pentiumpro
 WARNING_FLAGS = -Wall -Wno-trigraphs
 INCLUDES = -I. -Irsa
 DEFINES = -D_DEFINE_SRV 
