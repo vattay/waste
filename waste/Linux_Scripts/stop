@@ -3,4 +3,4 @@
 #
 #
 
-killall -s INT $PWD/wastesrv 
+killall -s INT "$PWD/wastesrv"

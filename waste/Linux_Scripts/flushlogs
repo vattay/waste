@@ -3,4 +3,4 @@
 #
 #
 
-killall -s USR1 $PWD/wastesrv
+killall -s USR1 "$PWD/wastesrv"

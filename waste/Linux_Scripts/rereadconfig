@@ -3,4 +3,4 @@
 #
 #
 
-killall -s HUP $PWD/wastesrv
+killall -s HUP "$PWD/wastesrv"
