@@ -106,7 +106,11 @@ void C_FileDB::Scan(const char *pathlist)
 	unsigned int len=strlen(path_buf);
 	if (len==sizeof(path_buf)-1) {
 		char *p=path_buf+len-1;
+#ifdef _WIN32
+		while ((p>path_buf)&&(*p!=';'))
+#else
 		while ((p>path_buf)&&((*p!=';')||(*p!=':')))
+#endif
 			p--;
 		*p=0;
 	};
@@ -114,10 +118,17 @@ void C_FileDB::Scan(const char *pathlist)
 	char *p=path_buf;
 	while (p && *p) {
 		char *lp=p;
+#ifdef _WIN32
+		p=strstr(p,";");
+		if (p) {
+			if (*p) *p++=0;
+		}
+#else
 		p += strcspn(p, ";:");
 		if (*p == ';' || *p == ':') {
 			*p++ = 0;
 		}
+#endif
 
 		ScanType i;
 		#ifdef _WIN32
@@ -690,9 +701,9 @@ int C_FileDB::DoScan(int maxtime, C_FileDB *oldDB)
 										if (s.st_mode & S_IFDIR) t=DT_DIR;
 /***** nite613 adding symbolic link following*/
 										if (s.st_mode & S_IFLNK){
-											log_printf(ds_Warning,"Found symbolic link: %s\n", buf);
+											log_printf(ds_Informational,"Found symbolic link: %s\n", buf);
 											readlink(buf, buf, sizeof(buf));
-											log_printf(ds_Warning,"Resolved to: %s", buf);
+											log_printf(ds_Informational,"Resolved to: %s", buf);
 											goto FoundLink;
 										}
 										fsize=s.st_size;
