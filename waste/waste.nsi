@@ -12,6 +12,12 @@ CheckBitmap "modern.bmp"
 ; Disable below when using NSIS older than 2.x
 XPStyle on
 
+VIAddVersionKey ProductName "WASTE/DS"
+VIAddVersionKey FileVersion "v1.5 beta 1"
+VIAddVersionKey FileDescription "WASTE Delivery System for ${APP_NAME_VER}"
+VIAddVersionKey LegalCopyright "(C) 2003 Nullsoft, Inc., (C) 2004 WASTE Development Team"
+VIProductVersion 1.5.0.0
+
 Name "${APP_NAME_VER}"
 Caption "${APP_NAME_VER} - Setup"
 
@@ -32,23 +38,35 @@ SetDateSave on
 InstallDir $PROGRAMFILES\${APP_NAME_SMALL}
 InstallDirRegKey HKLM SOFTWARE\${APP_NAME_SMALL} ""
 
-Function .onInit
-  ReadRegStr $0 HKLM SOFTWARE\${APP_NAME_BIG} ""
-  StrCmp $0 "" end
-   IfFileExists $SMPROGRAMS\${APP_NAME_BIG}\*.* smthere
-     SectionSetFlags 3 0
-   smthere:
-end:
-   IfFileExists $SMSTARTUP\${APP_NAME_BIG}.lnk slthere ; by default do not do startup
-     SectionSetFlags 4 0
-   slthere:
+!ifndef NOINSTTYPES ; only if not defined
+  InstType "Full"
+  InstType "Minimal"
+  ;InstType /NOCUSTOM
+  ;InstType /COMPONENTSONLYONCUSTOM
+!endif
 
-SectionSetFlags 3 0
+; SOMETHING IS WRONG HERE!
+; SectionSetFlags is no longer documented
+; This isin't that important anyway. I will fix later
+; sH4RD
 
-FunctionEnd
+;Function .onInit
+;  ReadRegStr $0 HKLM SOFTWARE\${APP_NAME_BIG} ""
+;  StrCmp $0 "" end
+;   IfFileExists $SMPROGRAMS\${APP_NAME_BIG}\*.* smthere
+;     SectionSetFlags 3 0
+;   smthere:
+;end:
+;   IfFileExists $SMSTARTUP\${APP_NAME_BIG}.lnk slthere ; by default do not do startup
+;     SectionSetFlags 4 0
+;   slthere:
+;
+;SectionSetFlags 3 0
+;
+;FunctionEnd
 
-Section "${APP_NAME_BIG} (required)" !Required
-  SectionIn RO
+Section "${APP_NAME_BIG} (required)"
+  SectionIn 1 2 RO
   SetOutPath $INSTDIR
   File release\${APP_EXENAME}
   File release\${APP_EXENAME}.manifest
@@ -56,38 +74,50 @@ Section "${APP_NAME_BIG} (required)" !Required
   CreateDirectory $INSTDIR\Downloads
 SectionEnd
 
-Section "${APP_NAME_SMALL} Documentation (PDF)"
-  SetOutPath $INSTDIR\Docs
-  File Docs\documentation.pdf
-  CreateDirectory $INSTDIR\Docs
-  CreateShortCut "$SMPROGRAMS\${APP_NAME_BIG}\${APP_NAME_SMALL} Documentation (pdf).lnk" \
-                 "$INSTDIR\Docs\documentation.pdf"
-SectionEnd
+SubSection /e Documentation
 
-Section "${APP_NAME_SMALL} Documentation (HTML)"
-  SetOutPath $INSTDIR\Docs
-  File Docs\documentation.html
-  CreateDirectory $INSTDIR\Docs
-  CreateShortCut "$SMPROGRAMS\${APP_NAME_BIG}\${APP_NAME_SMALL} Documentation (html).lnk" \
-                 "$INSTDIR\Docs\documentation.html"
-SectionEnd
+  Section "PDF Version"
+    SectionIn 1
+    SetOutPath $INSTDIR\Docs
+    File Docs\documentation.pdf
+    CreateDirectory $INSTDIR\Docs
+    CreateShortCut "$SMPROGRAMS\${APP_NAME_BIG}\${APP_NAME_SMALL} Documentation (pdf).lnk" \
+                   "$INSTDIR\Docs\documentation.pdf"
+  SectionEnd
 
-Section "Start Menu shortcuts"
-  CreateDirectory $SMPROGRAMS\${APP_NAME_BIG}
-  CreateShortCut "$SMPROGRAMS\${APP_NAME_BIG}\Uninstall ${APP_NAME_BIG}.lnk" \
-                 "$INSTDIR\uninst.exe"
-  CreateShortCut "$SMPROGRAMS\${APP_NAME_BIG}\${APP_NAME_BIG}.lnk" \
-                 "$INSTDIR\${APP_EXENAME}"
-  CreateShortCut "$SMPROGRAMS\${APP_NAME_BIG}\${APP_NAME_BIG} License.lnk" \
-                 "$INSTDIR\license.txt"
-  CreateShortCut "$SMPROGRAMS\${APP_NAME_BIG}\${APP_NAME_BIG} Downloads Directory.lnk" \
-                 "$INSTDIR\downloads"
-SectionEnd
+  Section "HTML Version (Online)"
+    SectionIn 1 2
+    SetOutPath $INSTDIR\Docs
+    File Docs\documentation.html
+    CreateDirectory $INSTDIR\Docs
+    CreateShortCut "$SMPROGRAMS\${APP_NAME_BIG}\${APP_NAME_SMALL} Documentation (html).lnk" \
+                   "$INSTDIR\Docs\documentation.html"
+  SectionEnd
 
-Section "Launch on startup"
-  CreateShortCut "$SMSTARTUP\${APP_NAME_BIG}.lnk" \
-                 "$INSTDIR\${APP_EXENAME}"
-SectionEnd
+SubSectionEnd
+
+;SubSection /e Options
+
+  Section "Start Menu shortcuts"
+    SectionIn 1 2
+    CreateDirectory $SMPROGRAMS\${APP_NAME_BIG}
+    CreateShortCut "$SMPROGRAMS\${APP_NAME_BIG}\Uninstall ${APP_NAME_BIG}.lnk" \
+                   "$INSTDIR\uninst.exe"
+    CreateShortCut "$SMPROGRAMS\${APP_NAME_BIG}\${APP_NAME_BIG}.lnk" \
+                   "$INSTDIR\${APP_EXENAME}"
+    CreateShortCut "$SMPROGRAMS\${APP_NAME_BIG}\${APP_NAME_BIG} License.lnk" \
+                   "$INSTDIR\license.txt"
+    CreateShortCut "$SMPROGRAMS\${APP_NAME_BIG}\${APP_NAME_BIG} Downloads Directory.lnk" \
+                   "$INSTDIR\downloads"
+  SectionEnd
+
+  Section "Launch on startup"
+    SectionIn 1
+    CreateShortCut "$SMSTARTUP\${APP_NAME_BIG}.lnk" \
+                   "$INSTDIR\${APP_EXENAME}"
+  SectionEnd
+
+;SubSectionEnd
 
 Section -post
 
@@ -137,7 +167,7 @@ DeletedEXE:
   Delete $SMSTARTUP\${APP_NAME_BIG}.lnk
 
   RMDir $INSTDIR\Downloads
-  RMDir $INSTDIR\Docs
+  RMDir /r $INSTDIR\Docs
 
   IfFileExists $INSTDIR\downloads\*.* 0 NoDownloads
 
