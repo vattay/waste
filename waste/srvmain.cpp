@@ -132,6 +132,40 @@ static void installsighandler()
 	#endif
 }
 
+/* nite613 Adding this from WASTED. Is this windows compatible? */
+void main_AddNodes(){
+  char str[1024+8];
+  sprintf(str,"%s.pr1",g_config_prefix);
+
+  FILE *fp=fopen(str,"rb");
+  if (fp)
+  {
+    while (1)
+    {
+      char line[512];
+      fgets(line,512,fp);
+      if (feof(fp)) break;
+      if (line[0] == '#') continue;
+      if (line[strlen(line)-1] == '\n') line[strlen(line)-1]=0;
+      if (strlen(line)>1)
+      {
+        char *p=line;
+        while (*p && *p != ':') p++;
+        if (*p) *p++=0;
+        char *ratingp=p;
+        while (*ratingp && *ratingp != ':') ratingp++;
+        if (*ratingp) *ratingp++=0;
+
+        // Drop it on the connection list
+        // rating really doesn't matter here; we're not in WIN32
+        AddConnection(line,atoi(p),100);
+      }
+      else break;
+    }
+    fclose(fp);
+  }
+}
+
 int main(int argc, char **argv)
 {
 	SetProgramDirectory(argv[0]);
@@ -235,6 +269,8 @@ int main(int argc, char **argv)
 
 		InitializeNetworkparts();
 
+		main_AddNodes();
+		
 		// run loop
 
 		while (!g_exit)

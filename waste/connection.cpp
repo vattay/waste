@@ -30,6 +30,18 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "rsa/r_random.hpp"
 #include "rsa/rsa.hpp"
 
+/* nite613 moving this change from WASTED */
+#if !defined(_WIN32)
+/* Windows non-blocking connect() works just fine, but it is
+ * "one of the most non-portable areas of Unix network programming".
+ * See http://www.wychk.org/~gless/non-blocking.html
+ * In the code below when using a non-blocking connect() the call
+ * to select() or poll(), or the very first recv() thereafter, will
+ * often fail.  By #defining BLOCKING_CONNECT we defer making the
+ * socket non-blocking until after a successful connect().
+ */
+#define BLOCKING_CONNECT
+#endif
 
 inline bool _bfInit::TestAll1(unsigned int mask)
 {
@@ -140,7 +152,9 @@ C_Connection::C_Connection(char *hostname, unsigned short port, C_AsyncDNS *dns)
 		log_printf(ds_Error,"connection: call to socket() failed: %d.",ERRNO);
 	}
 	else {
+#ifndef BLOCKING_CONNECT
 		SET_SOCK_BLOCK(m_socket,0);
+#endif
 		safe_strncpy(m_host,hostname,sizeof(m_host));
 		memset(&m_saddr,0,sizeof(m_saddr));
 		m_saddr.sin_family=AF_INET;
@@ -501,6 +515,9 @@ C_Connection::state C_Connection::run(int max_send_bytes, int max_recv_bytes)
 		int res=::connect(m_socket,(sockaddr *)&m_saddr,16);
 		if (!res) {
 			m_state=STATE_CONNECTED;
+#ifdef BLOCKING_CONNECT
+      			SET_SOCK_BLOCK(m_socket,0);
+#endif
 		}
 		else if (ERRNO!=EINPROGRESS) {
 			log_printf(ds_Error,"connection: connect() returned error: %d",ERRNO);
