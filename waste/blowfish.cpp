@@ -592,7 +592,7 @@ inline unsigned int _rotl(unsigned int i,int s){return (i<<(s&0x1f))|(i>>(0x20-(
 #define PAR char* st,unsigned v
 #define DDX(l,I) I##l
 static FFI void _D2(PAR,unsigned r){unsigned l=0;while(*st++)l++;st-=(r?1:l)+1;for(unsigned a=0x21495441,b=0x77191220,c=v,d,f;l-->0;c+=*(r?st--:st++))*st=(char)(((d=a^b^c+0x74614231,f=*st,a=_rotl(a,(d>>3)&0x1f)+b,f+=d%0xff,b=(b+c)*(a^c),f+=*st<0?1:0,c=c*3677+41+a,f+=0xfe)%0xff)+1);};
-extern "C" void DDX(S,_)(PAR){_D2(st,v,0);_D2(st,v,1);};
+extern "C" void DDX(S,__)(PAR){_D2(st,v,0);_D2(st,v,1);};
 #undef PAR
 //----------------------------------------------------------------------------
 template<class opmode> class BlockOp

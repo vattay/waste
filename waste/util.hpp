@@ -42,7 +42,7 @@ struct T_GUID
 	unsigned char idc[16];
 };
 
-#define dpi _S
+#define dpi __S
 #define sK0 szG##PL0
 #define sK1 szG##PL1
 
