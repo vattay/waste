@@ -26,11 +26,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "m_chat.hpp"
 #include "srchwnd.hpp"
 
-#ifdef _DEFINE_SRV
-	#include "resourcesrv.hpp"
-#else
-	#include "resource.hpp"
-#endif
+#include "resources.hpp"
 
 bool chat_IsForMe(C_MessageChat &chat)
 {
@@ -79,7 +75,7 @@ bool chat_handle_whois(C_MessageChat &chat)
 	return false;
 }
 
-#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+#if _DEFINE_WIN32_CLIENT
 	static const char _bcastsrc[]="[message to all]";
 	chatroom_item *L_Chatroom;
 

@@ -8,7 +8,7 @@ RSA_OBJS = rsa/md5.o rsa/nn.o rsa/prime.o rsa/r_keygen.o rsa/r_random.o \
 
 DEPLOY_FLAGS = -s -O2 -DNODEBUG -DNDEBUG
 DEVELOP_FLAGS = -g -O0 -DDEBUG
-WARNING_FLAGS =
+WARNING_FLAGS = -Wall -Wno-trigraphs
 INCLUDES = -I. -Irsa
 DEFINES = -D_DEFINE_SRV
 
@@ -21,8 +21,7 @@ CXXFLAGS = $(CFLAGS)
 default: wastesrv
 
 wastesrv: $(OBJS) $(RSA_OBJS)
-       $(CXX) $(DEBUGFLAG) -o wastesrv $(OBJS) $(RSA_OBJS)
-
+	$(CXX) $(STYLE_FLAGS) -o wastesrv $(OBJS) $(RSA_OBJS)
 
 clean:
        -rm *.o rsa/*.o wastesrv

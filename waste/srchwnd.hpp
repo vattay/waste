@@ -51,7 +51,7 @@ void Search_Search(char *str);
 void Search_Resort();
 void Search_AddReply(T_Message *message);
 
-#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+#if _DEFINE_WIN32_CLIENT
 BOOL WINAPI Search_DlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 extern HWND g_search_wnd;
 #endif

@@ -297,7 +297,7 @@ void C_Connection::init_crypt_gotpkey() //got their public key
 	if (g_use_networkhash && g_networkhash_PSK) {
 		_InitialPacket2_PSK &p2psk=(_InitialPacket2_PSK&)packsend2;
 		memcpy(p2psk.sRand,packrecv1.sRand,sizeof(p2psk.sRand));
-		for (int i=0;i<(sizeof(p2psk.sRand)/sizeof(int));i++) ((unsigned int*)(p2psk.sRand))[i]^=(~0);
+		for (unsigned i=0;i<(sizeof(p2psk.sRand)/sizeof(int));i++) ((unsigned int*)(p2psk.sRand))[i]^=(~0);
 		g_networkhash_PSK_fish.EncryptECB(p2psk.sPubCrypted, sizeof(p2psk.sPubCrypted));
 		g_networkhash_PSK_fish.EncryptECB(p2psk.sRand, sizeof(p2psk.sRand));
 		R_GenerateBytes((unsigned char*)&packsend2+sizeof(_InitialPacket2)+m_InitialPacket2Add,m_iSendRandomPadding2,&g_random);
@@ -328,7 +328,7 @@ void C_Connection::init_crypt_decodekey() //got their encrypted session key for 
 		m_fish_recv.DecryptPCBC(p2psk.sRand, sizeof(p2psk.sRand));
 		g_networkhash_PSK_fish.DecryptECB(p2psk.sPubCrypted, sizeof(p2psk.sPubCrypted));
 		g_networkhash_PSK_fish.DecryptECB(p2psk.sRand, sizeof(p2psk.sRand));
-		for (int i=0;i<(sizeof(p2psk.sRand)/sizeof(int));i++) ((unsigned int*)(p2psk.sRand))[i]^=(~0);
+		for (unsigned i=0;i<(sizeof(p2psk.sRand)/sizeof(int));i++) ((unsigned int*)(p2psk.sRand))[i]^=(~0);
 		if (memcmp(p2psk.sRand, m_local_sRand, sizeof(localkeyinfo.sRand))) {
 			log_printf(ds_Error,"connection: stealth mode fast MAC failed!!! DOS-Attack warning!");
 			close(1);
@@ -371,7 +371,7 @@ void C_Connection::init_crypt_decodekey() //got their encrypted session key for 
 
 	//combine the first 56 bytes of sKeyA and sKeyB to get our session key
 	//check to make sure it is nonzero.
-	int x;
+	unsigned x;
 	int zeros=0;
 	for (x = 0; x < sizeof(localkeyinfo.sKey); x++) {
 		localkeyinfo.sKey[x]^=m_mykeyinfo.sKey[x];
@@ -403,10 +403,10 @@ void C_Connection::init_crypt_decodekey() //got their encrypted session key for 
 
 void C_Connection::do_init()
 {
-	int x;
+	unsigned x;
 	m_satmode=0;
 	m_remote_maxsend=2048;
-	for (x = 0 ; x < sizeof(bps_count)/sizeof(bps_count[0]); x ++) {
+	for (x = 0 ; x < NUM_BPS_COUNT; x ++) {
 		bps_count[x].recv_bytes=0;
 		bps_count[x].send_bytes=0;
 		bps_count[x].time_ms=GetTickCount();
@@ -452,20 +452,14 @@ void C_Connection::calc_bps(int *send, int *recv)
 	unsigned int timediff=now-bps_count[bps_count_pos].time_ms;
 	if (timediff < 1) timediff=1;
 
-	#ifdef _WIN32
 		m_last_sendbps=MulDiv(m_send_bytes_total-bps_count[bps_count_pos].send_bytes,1000,timediff);
 		m_last_recvbps=MulDiv(m_recv_bytes_total-bps_count[bps_count_pos].recv_bytes,1000,timediff);
-	#else
-		// TODO: enough prec?
-		m_last_sendbps=(((m_send_bytes_total-bps_count[bps_count_pos].send_bytes)*1000)/timediff);
-		m_last_recvbps=(((m_recv_bytes_total-bps_count[bps_count_pos].recv_bytes)*1000)/timediff);
-	#endif
 
 	if (send) *send=m_last_sendbps;
 	if (recv) *recv=m_last_recvbps;
 
 	int l=bps_count_pos-1;
-	if (l<0) l=sizeof(bps_count)/sizeof(bps_count[0])-1;
+	if (l<0) l=NUM_BPS_COUNT-1;
 
 	if (now - bps_count[l].time_ms < 0 ||
 		now - bps_count[l].time_ms >= 100)
@@ -474,7 +468,7 @@ void C_Connection::calc_bps(int *send, int *recv)
 		bps_count[bps_count_pos].recv_bytes=m_recv_bytes_total;
 		bps_count[bps_count_pos].time_ms=now;
 		bps_count_pos++;
-		if (bps_count_pos>=sizeof(bps_count)/sizeof(bps_count[0])) bps_count_pos=0;
+		if (bps_count_pos>=NUM_BPS_COUNT) bps_count_pos=0;
 	};
 }
 
@@ -777,7 +771,7 @@ int C_Connection::getMaxSendSize()
 
 int C_Connection::send_bytes_available()
 {
-	extern int g_conspeed;
+	// extern int g_conspeed;
 	int a=getMaxSendSize();
 
 	a-=m_send_len;

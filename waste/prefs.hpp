@@ -21,7 +21,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #ifndef _PREFS_H_
 #define _PREFS_H_
 
-#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+#if _DEFINE_WIN32_CLIENT
 	extern HWND prefs_hwnd,prefs_cur_wnd;
 	int Prefs_SelectProfile(int force); //returns 1 on user abort
 	BOOL CALLBACK PrefsOuterProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,LPARAM lParam);

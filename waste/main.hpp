@@ -23,6 +23,14 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 #define APP_NAME "WASTE"
 
+#if !defined(_DEFINE_WIN32_CLIENT)
+	#if defined(_WIN32) && !defined(_DEFINE_SRV)
+		#define _DEFINE_WIN32_CLIENT 1
+	#else
+		#define _DEFINE_WIN32_CLIENT 0
+	#endif
+#endif
+
 #include "platform.hpp"
 #include "configparams.hpp"
 #include "netparams.hpp"
@@ -125,7 +133,7 @@ void SetProgramDirectory(const char *progpath=NULL);
 
 
 //win32 specific shit
-#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+#if _DEFINE_WIN32_CLIENT
 	void handleWasteURL(char *url);
 
 	void RunKeyGen(HWND hwndParent, char *keyout);

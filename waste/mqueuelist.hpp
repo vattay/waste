@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #define _C_MQUEUELIST_H_
 
 #include "mqueue.hpp"
-#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+#if _DEFINE_WIN32_CLIENT
 #include "listview.hpp"
 #endif
 #include "itemlist.hpp"
@@ -54,7 +54,7 @@ public:
 
 	static unsigned char GetMessagePriority(int type);
 
-	#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+	#if _DEFINE_WIN32_CLIENT
 		void SetStatusListView(W_ListView *lv) {m_lv=lv;}
 	#endif
 
@@ -68,7 +68,7 @@ protected:
 
 	MessageQueueCallback m_got_message;
 
-	#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+	#if _DEFINE_WIN32_CLIENT
 		W_ListView *m_lv;
 	#endif
 };

@@ -30,7 +30,8 @@ C_MessageQueueList::C_MessageQueueList(MessageQueueCallback gm, unsigned char ma
 	m_queues=new C_ItemList<C_MessageQueue>;
 	m_local_route=new C_MessageQueue(NULL,1);
 	m_max_ttl=maxttl;
-	#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+
+	#if _DEFINE_WIN32_CLIENT
 		m_lv=NULL;
 	#endif
 	m_stat_route_errors=0;
@@ -206,7 +207,7 @@ void C_MessageQueueList::run(int doRouting)
 		};
 
 		if (s == C_Connection::STATE_ERROR || s == C_Connection::STATE_CLOSED) {
-			#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+			#if _DEFINE_WIN32_CLIENT
 				if (m_lv) {
 					int i=m_lv->FindItemByParam((int)cm->get_con());
 					if (i != -1) {
@@ -236,7 +237,7 @@ void C_MessageQueueList::run(int doRouting)
 					g_forceip_dynip_addr=INADDR_NONE;
 				};
 			};
-			#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+			#if _DEFINE_WIN32_CLIENT
 				PostMessage(g_netstatus_wnd,WM_USER_TITLEUPDATE,0,0);
 			#endif
 		}

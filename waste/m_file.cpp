@@ -62,7 +62,7 @@ C_FileSendRequest::C_FileSendRequest(C_SHBuf *in)
 	memcpy(&m_guid,data,16); data+=16; datalen-=16;
 	memcpy(&m_prev_guid,data,16); data+=16; datalen-=16;
 
-	if (datalen < 4+SHA_OUTSIZE+(sizeof(m_nick)-1)+4+2) {
+	if (datalen < 4+SHA_OUTSIZE+((int) sizeof(m_nick)-1)+4+2) {
 		if (datalen) {//m_abort>=2!
 			m_abort=DataUInt1(data);data++;datalen--;
 			if (m_abort<2) {

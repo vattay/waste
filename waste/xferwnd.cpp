@@ -25,12 +25,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "xferwnd.hpp"
 #include "srchwnd.hpp"
 
-#ifdef _DEFINE_SRV
-	#include "resourcesrv.hpp"
-#else
-	#include "resource.hpp"
-#endif
-#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+#include "resources.hpp"
+#if _DEFINE_WIN32_CLIENT
 	#include "childwnd.hpp"
 #endif
 #include "m_upload.hpp"
@@ -38,7 +34,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #define PENDING_UPLOAD_STRING "Pending Upload"
 
 int g_files_in_download_queue;
-#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+#if _DEFINE_WIN32_CLIENT
 	HWND g_xferwnd, g_xfer_subwnd_active;
 	W_ListView g_lvrecv, g_lvsend, g_lvrecvq;
 #endif
@@ -48,7 +44,7 @@ C_ItemList<XferRecv> g_recvs;
 C_ItemList<char> g_uploads;
 C_ItemList<C_SHBuf> g_uploadqueue;
 
-#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+#if _DEFINE_WIN32_CLIENT
 	static HWND g_xfer_subwnds[3];
 	static void doExecuteOfDownload(HWND hwndDlg, int x, int copy)
 	{
@@ -194,7 +190,7 @@ static void RunSends()
 		XferSend *xs=g_sends.Get(x);
 		int s=xs->run_hdr(g_mql);
 		if (s) {
-			#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+			#if _DEFINE_WIN32_CLIENT
 				int idx=g_lvsend.FindItemByParam((int)xs);
 				if (idx!=-1) {
 					if (!g_config->ReadInt(CONFIG_send_autoclear,CONFIG_send_autoclear_DEFAULT)) {
@@ -219,7 +215,7 @@ static void RunSends()
 		xs->run(g_mql);
 	};
 	runoffs++; //round robin
-	#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+	#if _DEFINE_WIN32_CLIENT
 		if (needrefresh) PostMessage(g_xferwnd,WM_USER_TITLEUPDATE,0,0);
 	#endif
 }
@@ -227,9 +223,10 @@ static void RunSends()
 static void RunRecvs()
 {
 	int needrefresh=0;
+
+	#if _DEFINE_WIN32_CLIENT
 	static unsigned int next_runitem;
 
-	#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
 		int a=GetTickCount()-next_runitem;
 		if (!next_runitem || a>=0) {
 			if (g_mql->GetNumQueues()) if (g_recvs.GetSize() < g_max_simul_dl) {
@@ -304,7 +301,7 @@ static void RunRecvs()
 		XferRecv *xr=g_recvs.Get(x);
 		int s=xr->run(g_mql);
 		if (s) {
-			#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+			#if _DEFINE_WIN32_CLIENT
 				int idx=g_lvrecv.FindItemByParam((int)xr);
 				if (idx!=-1) {
 					char text[128];
@@ -343,7 +340,7 @@ static void RunRecvs()
 			needrefresh++;
 		};
 	};
-	#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+	#if _DEFINE_WIN32_CLIENT
 		if (needrefresh) PostMessage(g_xferwnd,WM_USER_TITLEUPDATE,0,0);
 	#endif
 }
@@ -351,7 +348,7 @@ static void RunRecvs()
 int Xfer_WillQ(char *file, char *guidstr)
 {
 
-	#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+	#if _DEFINE_WIN32_CLIENT
 		unsigned int nhostitems=0;
 		//see if item is already beind downloaded, and if not, how many items from that host are
 		int n=g_lvrecv.GetCount();
@@ -374,7 +371,7 @@ int Xfer_WillQ(char *file, char *guidstr)
 	return (g_recvs.GetSize() >= g_max_simul_dl);
 }
 
-#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+#if _DEFINE_WIN32_CLIENT
 
 	void Xfer_UploadFileToUser(HWND hwndDlg, char *file, char *user, char *leadingpath)
 	{
@@ -469,7 +466,7 @@ void Xfer_Run()
 	RunRecvs();
 }
 
-#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+#if _DEFINE_WIN32_CLIENT
 	void XferDlg_SetSel(int sel)
 	{
 		HWND tabwnd=GetDlgItem(g_xferwnd,IDC_TAB1);
@@ -645,7 +642,7 @@ void Xfer_Run()
 	}
 #endif//WIN32
 
-#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+#if _DEFINE_WIN32_CLIENT
 	void RecvQ_UpdateStatusText()
 	{
 		char buf[256];

@@ -27,7 +27,7 @@ bool chat_IsForMe(C_MessageChat &chat);
 bool chat_handle_whois(C_MessageChat &chat);
 int chat_HandleMsg(T_Message *message); //refered by either srvmain or d_chat
 
-#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+#if _DEFINE_WIN32_CLIENT
 	struct ChatroomItem
 	{
 		HWND hwnd;

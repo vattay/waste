@@ -48,9 +48,9 @@ C_UploadRequest::C_UploadRequest(C_SHBuf *in)
 	memset(m_nick,0,sizeof(m_nick));
 
 	unsigned char *data=(unsigned char *)in->Get();
-	int datalen=in->GetLength();
-	if (datalen < 16+8+(sizeof(m_dest)-1)+4+(sizeof(m_nick)-1) + 1 ||
-		datalen > 16+8+(sizeof(m_dest)-1)+4+(sizeof(m_nick)-1) + 2048)
+	unsigned  datalen=in->GetLength();
+	if (datalen < 16+8+(sizeof(m_dest)-1)+4+(sizeof(m_nick)-1) + 1
+	||  datalen > 16+8+(sizeof(m_dest)-1)+4+(sizeof(m_nick)-1) + 2048)
 	{
 		log_printf(ds_Warning,"uploadrequest: length out of range (%d)",datalen);
 		return;

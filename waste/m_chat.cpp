@@ -35,7 +35,7 @@ C_MessageChatReply::~C_MessageChatReply()
 C_MessageChatReply::C_MessageChatReply(C_SHBuf *in)
 {
 	nick[0]=0;
-	if (in->GetLength() > sizeof(nick)-1) {
+	if (in->GetLength() > (int) sizeof(nick)-1) {
 		log_printf(ds_Warning,"chatreply: length of %d too big",in->GetLength());
 	}
 	else {
@@ -51,7 +51,7 @@ void C_MessageChatReply::setnick(const char *fn)
 
 C_SHBuf *C_MessageChatReply::Make()
 {
-	int l=strlen(nick);
+	unsigned l=strlen(nick);
 	if (l > sizeof(nick)-1) {
 		dbg_printf(ds_Debug,"chatreply::make() length is %d",l);
 		l=sizeof(nick)-1;

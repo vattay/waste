@@ -20,10 +20,19 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #ifndef _UTIL_H_
 #define _UTIL_H_
 
+#if !defined(_DEFINE_WIN32_CLIENT)
+	#if defined(_WIN32) && !defined(_DEFINE_SRV)
+		#define _DEFINE_WIN32_CLIENT 1
+	#else
+		#define _DEFINE_WIN32_CLIENT 0
+	#endif
+#endif
+
 #include "rsa/global.hpp"
 #include "rsa/rsaref.hpp"
 #include "itemlist.hpp"
-#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+
+#if _DEFINE_WIN32_CLIENT
 	#include "listview.hpp"
 #endif
 #include "sha.hpp"
@@ -62,7 +71,7 @@ extern R_RANDOM_STRUCT g_random;
 //string utilities
 char *extension(char *fn);
 
-#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+#if _DEFINE_WIN32_CLIENT
 //windows shit
 extern int toolwnd_state;
 extern int systray_state;
@@ -77,7 +86,7 @@ void SetWndTitle(HWND hwnd, char *titlebase);
 void removeInvalidFNChars(char *filename); //careful, removes colons too, so
 //when using on a full path, use +2. =)
 
-#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+#if _DEFINE_WIN32_CLIENT
 
 int doLoadKey(HWND hwndParent, const char *pstr, const char *keyfn, R_RSA_PRIVATE_KEY *key);
 int kg_writePrivateKey(char *fn, R_RSA_PRIVATE_KEY *key, R_RANDOM_STRUCT *rnd, char *passhash);
@@ -100,7 +109,7 @@ struct ACitem
 
 extern ACitem *g_aclist;
 extern int g_aclist_size;
-#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+#if _DEFINE_WIN32_CLIENT
 	void updateACList(W_ListView *lv);
 #else
 	void updateACList(void *lv);
@@ -182,7 +191,7 @@ struct PKitem
 
 extern C_ItemList<PKitem> g_pklist, g_pklist_pending;
 
-#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+#if _DEFINE_WIN32_CLIENT
 void copyMyPubKey(HWND hwndOwner);
 #endif
 

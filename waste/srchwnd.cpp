@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "srchwnd.hpp"
 #include "xferwnd.hpp"
 
-#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+#if _DEFINE_WIN32_CLIENT
 	#include "childwnd.hpp"
 	#include "d_chat.hpp"
 	#include "resource.hpp"
@@ -36,7 +36,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #define MAX_SRCHTEXTS 15
 #define SEARCHCACHE_EXPIRE_TIME (5*60*1000) // 5 minutes
 
-#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+#if _DEFINE_WIN32_CLIENT
 	HWND g_search_wnd;
 	static W_ListView g_lvsearchres;
 #endif
@@ -77,7 +77,7 @@ int g_searchhistory_position;
 #define COL_SPEED 4
 #define COL_LOC 5
 
-#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+#if _DEFINE_WIN32_CLIENT
 	static unsigned int *m_srch_sort;
 	static int m_srch_sort_len,m_srch_sort_alloc;
 	static int m_fullsize;

@@ -59,13 +59,21 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #define stricmp(x,y) strcasecmp(x,y)
 #define strnicmp(x,y,z) strncasecmp(x,y,z)
 #define _vsnprintf vsnprintf
-static inline char *safe_strncpy(char *out, const char *in, int maxl) { strncpy(out,in,maxl); out[maxl-1]=0; }
+
+static inline char *safe_strncpy(char *out, const char *in, int maxl)
+	{ return strncpy(out,in,maxl); out[maxl-1]=0; }
 
 static inline unsigned int GetTickCount()
 {
 	struct timeval tv;
 	gettimeofday(&tv,NULL);
 	return (tv.tv_sec * 1000) + (tv.tv_usec/1000);
+}
+
+static inline int MulDiv(int a, int b, int d)
+{
+	long long val = (long long) a * b;
+	return (int) (val / d);
 }
 
 #define MAX_PATH 1024

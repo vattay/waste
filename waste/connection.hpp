@@ -159,6 +159,7 @@ protected:
 		unsigned int send_bytes;
 		unsigned int recv_bytes;
 	} bps_count[30];
+#define NUM_BPS_COUNT ((int) (sizeof(bps_count)/sizeof(bps_count[0])))
 
 	int bps_count_pos;
 	unsigned int m_start_time;

@@ -41,7 +41,7 @@ C_MessagePing::C_MessagePing(C_SHBuf *in)
 	m_port=0;
 
 	unsigned char *data=(unsigned char*)in->Get();
-	int l=in->GetLength();
+	unsigned l=in->GetLength();
 	if (l < 2+4) return;
 
 	m_port=DataUInt2(data);data+=2;

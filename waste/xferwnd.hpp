@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 	#include "xfers.hpp"
 
-	#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+#if _DEFINE_WIN32_CLIENT
 		extern HWND g_xferwnd, g_xfer_subwnd_active;
 		extern W_ListView g_lvrecv, g_lvsend, g_lvrecvq;
 		extern int g_files_in_download_queue;
@@ -39,7 +39,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 	void Xfer_Run();
 	void RecvQ_UpdateStatusText();
 
-	#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+#if _DEFINE_WIN32_CLIENT
 		void Xfer_UploadFileToUser(HWND hwndDlg, char *file, char *user, char *leadingpath);
 		void XferDlg_SetSel(int sel=-1);
 		BOOL WINAPI Xfers_DlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);

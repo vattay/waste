@@ -23,9 +23,11 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 extern C_ItemList<C_Connection> g_new_net;
 
-#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+#if _DEFINE_WIN32_CLIENT
 extern W_ListView g_lvnetcons;
 extern HWND g_netstatus_wnd;
+
+BOOL WINAPI Net_DlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 #endif
 
 void NetKern_Run();
@@ -33,9 +35,5 @@ void AddConnection(char *str, unsigned short port, int rating);
 void DoPing(C_MessageQueue *mq);
 void RebroadcastCaps(C_MessageQueueList *mql);
 void NetKern_ConnectToHostIfOK(unsigned long ip, unsigned short port);
-
-#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
-BOOL WINAPI Net_DlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-#endif
 
 #endif//_NETKERN_H_

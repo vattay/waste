@@ -18,7 +18,7 @@ along with WASTE; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#include "stdafx.hpp"
+#include "platform.hpp"
 
 #include "main.hpp"
 #include "netkern.hpp"
@@ -31,11 +31,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 	#include "rsa/rsa.hpp"
 #endif
 
-#ifdef _DEFINE_SRV
-	#include "resourcesrv.hpp"
-#else
-	#include "resource.hpp"
-#endif
+#include "resources.hpp"
 
 //global strings
 
@@ -128,7 +124,7 @@ char* Bin2Hex_Lf(char* output, unsigned char* input, int len, int &perline, int 
 
 R_RANDOM_STRUCT g_random;
 
-#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+#if _DEFINE_WIN32_CLIENT
 static WNDPROC rng_oldWndProc;
 static unsigned int rng_movebuf[7];
 static int rng_movebuf_cnt;
@@ -242,7 +238,7 @@ void removeInvalidFNChars(char *filename)
 	};
 }
 
-#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+#if _DEFINE_WIN32_CLIENT
 ////windows shit
 
 int toolwnd_state;
@@ -435,7 +431,7 @@ int ACStringToStruct(const char *t, ACitem *i)
 	return 1;
 }
 
-#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+#if _DEFINE_WIN32_CLIENT
 	void updateACList(W_ListView *lv)
 #else
 	void updateACList(void *lv)
@@ -443,7 +439,7 @@ int ACStringToStruct(const char *t, ACitem *i)
 {
 	free(g_aclist);
 	if (lv) {
-		#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+		#if _DEFINE_WIN32_CLIENT
 			g_aclist_size=lv->GetCount();
 			g_aclist=(ACitem *)malloc(sizeof(ACitem)*g_aclist_size);
 			g_config->WriteInt(CONFIG_ac_cnt,g_aclist_size);
@@ -479,7 +475,7 @@ int ACStringToStruct(const char *t, ACitem *i)
 
 ////key shit
 
-#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+#if _DEFINE_WIN32_CLIENT
 
 static char tmp_passbuf[256];
 
@@ -572,7 +568,7 @@ static int readBFdata(FILE *in, CBlowfish *bl, void *data, unsigned int len)
 	return 0;
 }
 
-#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+#if _DEFINE_WIN32_CLIENT
 int doLoadKey(HWND hwndParent, const char *pstr, const char *keyfn, R_RSA_PRIVATE_KEY *key)
 #else
 int doLoadKey(const char *pstr, const char *keyfn, R_RSA_PRIVATE_KEY *key)
@@ -591,7 +587,7 @@ int doLoadKey(const char *pstr, const char *keyfn, R_RSA_PRIVATE_KEY *key)
 	FILE *fp;
 	if ((fp=fopen(keyfn,"rt"))==NULL) {
 		key->bits=0;
-#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+#if _DEFINE_WIN32_CLIENT
 		MessageBox(hwndParent,"Error loading private key",APP_NAME " Error",MB_OK|MB_ICONSTOP);
 #else
 		log_printf(ds_Console,APP_NAME " Error: Error loading private key");
@@ -662,7 +658,7 @@ int doLoadKey(const char *pstr, const char *keyfn, R_RSA_PRIVATE_KEY *key)
 
 	if (err) {
 		key->bits=0;
-		#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+		#if _DEFINE_WIN32_CLIENT
 			MessageBox(hwndParent,err,APP_NAME " Error",MB_OK|MB_ICONSTOP);
 		#else
 			log_printf(ds_Console,APP_NAME " Error: %s",err);
@@ -672,21 +668,21 @@ int doLoadKey(const char *pstr, const char *keyfn, R_RSA_PRIVATE_KEY *key)
 	return 0;
 }
 
-#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+#if _DEFINE_WIN32_CLIENT
 	void reloadKey(const char *passstr, HWND hwndParent)
 #else
 	void reloadKey(const char *passstr)
 #endif
 {
 	int retry=10;
-	#if defined(_DEFINE_SRV)||(!defined(_WIN32))
+	#if !_DEFINE_WIN32_CLIENT
 		char tmp_passbuf[256];
 	#endif
 
 	char keyfn[1024];
 	sprintf(keyfn,"%s.pr4",g_config_prefix);
 
-	#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+	#if _DEFINE_WIN32_CLIENT
 		if (!passstr) {
 	giveitanothergo:
 			if (DialogBox(g_hInst,MAKEINTRESOURCE(IDD_PASSWD),hwndParent,PassWordProc)) {
@@ -708,7 +704,7 @@ int doLoadKey(const char *pstr, const char *keyfn, R_RSA_PRIVATE_KEY *key)
 		};
 	#endif
 
-	#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+	#if _DEFINE_WIN32_CLIENT
 		int ret=doLoadKey(hwndParent,passstr,keyfn,&g_key);
 	#else
 		int ret=doLoadKey(passstr,keyfn,&g_key);
@@ -865,7 +861,7 @@ int loadPKList(char *fn)
 	return cnt;
 }
 
-#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+#if _DEFINE_WIN32_CLIENT
 void copyMyPubKey(HWND hwndOwner)
 {
 	char buf[(MAX_RSA_MODULUS_LEN/8)*2*2+4096];
@@ -1169,7 +1165,7 @@ bool is_accessable_addr(unsigned long addr)
 	return false;
 }
 
-#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+#if _DEFINE_WIN32_CLIENT
 void SetWndTitle(HWND hwnd, char *titlebase)
 {
 	char buf[1024];
@@ -1195,7 +1191,7 @@ static const char* dSevStArr[]=
 const char* sevString(dSeverity sev)
 {
 	static const char dummy[]="unknown!";
-	if ((sev>=1)&&(sev<=sizeof(dSevStArr))) {
+	if ((sev >= 1) && (sev <= (int) sizeof(dSevStArr))) {
 		return dSevStArr[sev-1];
 	}
 	else {

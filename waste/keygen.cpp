@@ -20,11 +20,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 #include "stdafx.hpp"
 
-#ifdef _DEFINE_SRV
-	#include "resourcesrv.hpp"
-#else
-	#include "resource.hpp"
-#endif
+#include "resources.hpp"
 
 #include "main.hpp"
 #include "rsa/r_random.hpp"

@@ -1,4 +1,6 @@
-#pragma once
+#ifndef _BUILD_H_
+#define _BUILD_H_
+
 #define __VER_IMAJOR 1
 #define __VER_VMAJOR 1
 #define __VER_SMAJOR "1"
@@ -25,3 +27,5 @@
 #define __VER_IFULLRB 1,5,0,407
 #define __VER_VFULLRB 1.5.0.407
 #define __VER_SFULLRB "1.5.0.407"
+
+#endif //  _BUILD_H_

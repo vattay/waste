@@ -95,11 +95,7 @@ further messages are verified with a MD5 to detect tampering.
 #include "netkern.hpp"
 #include "srchwnd.hpp"
 
-#ifdef _DEFINE_SRV
-	#include "resourcesrv.hpp"
-#else
-	#include "resource.hpp"
-#endif
+#include "resources.hpp"
 
 #include "build/build.hpp"
 
@@ -135,7 +131,7 @@ char g_config_prefix[1024];
 #endif
 
 char g_profile_name[128];
-#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+#if _DEFINE_WIN32_CLIENT
 	int g_extrainf;
 #endif
 int g_keepup;
@@ -145,7 +141,7 @@ int g_log_flush_auto;
 int g_max_simul_dl;
 unsigned int g_max_simul_dl_host;
 int g_use_accesslist;
-#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+#if _DEFINE_WIN32_CLIENT
 	int g_appendprofiletitles;
 #endif
 int g_do_autorefresh;
@@ -177,7 +173,7 @@ char g_filedlg_ulpath[256];
 
 int g_throttle_flag, g_throttle_send, g_throttle_recv;
 
-#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+#if _DEFINE_WIN32_CLIENT
 	int g_search_showfull;
 #endif
 
@@ -197,7 +193,7 @@ char g_client_id_str[33];
 C_ItemList<C_UploadRequest> uploadPrompts;
 C_ItemList<C_KeydistRequest> keydistPrompts;
 
-#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+#if _DEFINE_WIN32_CLIENT
 	HMENU g_context_menus;
 	HWND g_mainwnd;
 	HICON g_hSmallIcon;
@@ -378,7 +374,7 @@ void DoMainLoop()
 	int newl=g_mql->GetNumQueues();
 	if (lastqueues != newl) {
 		MYSRANDUPDATE((unsigned char *)&lastqueues,sizeof(lastqueues));
-		#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+		#if _DEFINE_WIN32_CLIENT
 			char text[32];
 			sprintf(text,":%d",newl);
 			SetDlgItemText(g_mainwnd,IDC_NETSTATUS,text);
@@ -393,7 +389,7 @@ void DoMainLoop()
 
 		//flush config and netq
 		g_config->Flush();
-		#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+		#if _DEFINE_WIN32_CLIENT
 			SaveNetQ();
 		#endif
 	};
@@ -574,7 +570,7 @@ void main_MsgCallback(T_Message *message, C_MessageQueueList *_this, C_Connectio
 			MYSRANDUPDATE((unsigned char *)&message->message_guid,16);
 			C_MessagePing rep(message->data);
 
-			#if (defined(_WIN32)&&(!defined(_DEFINE_SRV)))
+			#if _DEFINE_WIN32_CLIENT
 				unsigned int a=(unsigned int)(cn->get_interface());// Intellisense bug here
 				if (rep.m_port && rep.m_ip && (a != rep.m_ip)) {
 					add_to_netq(rep.m_ip,rep.m_port,90,0);
@@ -633,7 +629,7 @@ void main_MsgCallback(T_Message *message, C_MessageQueueList *_this, C_Connectio
 				};
 			}
 			else {
-#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+#if _DEFINE_WIN32_CLIENT
 				Search_AddReply(message);
 #endif
 			};
@@ -648,7 +644,7 @@ void main_MsgCallback(T_Message *message, C_MessageQueueList *_this, C_Connectio
 				for (x = 0; x < n; x ++) {
 					XferSend *xs=g_sends.Get(x);
 					if (!memcmp(r->get_prev_guid(),xs->get_guid(),16)) {
-#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+#if _DEFINE_WIN32_CLIENT
 						if (r->is_abort()==2) {
 							int a=xs->GetIdx()-UPLOAD_BASE_IDX;
 							if (a >= 0 && a < g_uploads.GetSize()) {
@@ -670,7 +666,7 @@ void main_MsgCallback(T_Message *message, C_MessageQueueList *_this, C_Connectio
 					};
 				};
 				if (x == n && (r->is_abort()==3)) { //file exists
-#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+#if _DEFINE_WIN32_CLIENT
 					int idx=r->get_idx();
 					if (idx >= UPLOAD_BASE_IDX) {
 						idx-=UPLOAD_BASE_IDX;
@@ -702,14 +698,14 @@ void main_MsgCallback(T_Message *message, C_MessageQueueList *_this, C_Connectio
 							}
 							else {
 								idx-=UPLOAD_BASE_IDX;
-#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+#if _DEFINE_WIN32_CLIENT
 								if (idx<g_uploads.GetSize() && g_uploads.Get(idx))
 #else
 								if (idx<g_uploads.GetSize())
 #endif
 								{
 									safe_strncpy(fn,g_uploads.Get(idx),sizeof(fn));
-#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+#if _DEFINE_WIN32_CLIENT
 									int lvidx;
 									if ((lvidx=g_lvsend.FindItemByParam((int)g_uploads.Get(idx))) >= 0) {
 										g_lvsend.DeleteItem(lvidx);
@@ -726,7 +722,7 @@ void main_MsgCallback(T_Message *message, C_MessageQueueList *_this, C_Connectio
 							dbg_printf(ds_Debug,"XXX: accept request on idx=%05i",r->get_idx());
 #endif
 							XferSend *a=new XferSend(_this,&message->message_guid,r,fn);
-#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+#if _DEFINE_WIN32_CLIENT
 							//remove any timed out files of a->GetName() from r->get_nick()
 							n=g_lvsend.GetCount();
 							for (x = 0; x < n; x ++) {
@@ -746,7 +742,7 @@ void main_MsgCallback(T_Message *message, C_MessageQueueList *_this, C_Connectio
 
 							char *err=a->GetError();
 							if (err) {
-#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+#if _DEFINE_WIN32_CLIENT
 								if (!g_config->ReadInt(CONFIG_send_autoclear,CONFIG_send_autoclear_DEFAULT)) {
 									g_lvsend.InsertItem(0,a->GetName(),0);
 									char buf[32];
@@ -762,7 +758,7 @@ void main_MsgCallback(T_Message *message, C_MessageQueueList *_this, C_Connectio
 							}
 							else {
 								g_sends.Add(a);
-#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+#if _DEFINE_WIN32_CLIENT
 								g_lvsend.InsertItem(0,a->GetName(),(int)a);
 								char buf[32];
 								int fs_l,fs_h;
@@ -773,7 +769,7 @@ void main_MsgCallback(T_Message *message, C_MessageQueueList *_this, C_Connectio
 								g_lvsend.SetItemText(0,3,"Sending");
 #endif
 							};
-#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+#if _DEFINE_WIN32_CLIENT
 							PostMessage(g_xferwnd,WM_USER_TITLEUPDATE,0,0);
 #endif
 						}
@@ -811,7 +807,7 @@ void main_MsgCallback(T_Message *message, C_MessageQueueList *_this, C_Connectio
 		};
 	case MESSAGE_CHAT_REPLY:
 		{
-			#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+			#if _DEFINE_WIN32_CLIENT
 				chat_HandleMsg(message);
 			#endif
 			break;
@@ -886,7 +882,7 @@ void main_MsgCallback(T_Message *message, C_MessageQueueList *_this, C_Connectio
 
 void main_onGotChannel(const char *cnl)
 {
-	#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+	#if _DEFINE_WIN32_CLIENT
 		HWND htree=GetDlgItem(g_mainwnd,IDC_CHATROOMS);
 		int added=0;
 		HTREEITEM h = TreeView_GetChild(htree,TVI_ROOT);
@@ -932,7 +928,7 @@ void main_onGotChannel(const char *cnl)
 
 void main_onGotNick(const char *nick, int del)
 {
-	#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+	#if _DEFINE_WIN32_CLIENT
 		if (nick) {
 			if (!stricmp(nick,g_regnick)) return;
 			KillTimer(g_mainwnd,5);
@@ -1047,13 +1043,13 @@ void UnifiedReadConfig(bool isreload)
 	g_throttle_recv=g_config->ReadInt(CONFIG_throttlerecv,CONFIG_throttlerecv_DEFAULT);
 
 	if (!isreload) {
-		#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+		#if _DEFINE_WIN32_CLIENT
 			const char* performstmp = g_config->ReadString(CONFIG_performs,CONFIG_performs_DEFAULT);
 			safe_strncpy(g_performs, performstmp, sizeof(g_performs));
 		#endif
 	};
 
-	#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+	#if _DEFINE_WIN32_CLIENT
 		g_appendprofiletitles=g_config->ReadInt(CONFIG_appendpt,CONFIG_appendpt_DEFAULT);
 		g_extrainf=g_config->ReadInt(CONFIG_extrainf,CONFIG_extrainf_DEFAULT);
 		g_search_showfull=g_config->ReadInt(CONFIG_search_showfull,CONFIG_search_showfull_DEFAULT);
@@ -1073,9 +1069,10 @@ void UnifiedReadConfig(bool isreload)
 void SetProgramDirectory(const char *progpath)
 {
 	char *p;
-	progpath;
+
 	#ifdef _WIN32
 		{
+			progpath;
 			GetModuleFileName(NULL,g_config_dir,sizeof(g_config_dir));
 		};
 	#else

@@ -24,11 +24,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "netkern.hpp"
 #include "xferwnd.hpp"
 
-#ifdef _DEFINE_SRV
-	#include "resourcesrv.hpp"
-#else
-	#include "resource.hpp"
-#endif
+#include "resources.hpp"
 
 void add_to_netq(unsigned long ip, unsigned short port, int rating, int replace)
 {

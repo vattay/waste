@@ -21,7 +21,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #ifndef _CHILDWND_H_
 #define _CHILDWND_H_
 
-#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+#if _DEFINE_WIN32_CLIENT
 	struct ChildWndResizeItem{
 		int id;
 		int type; // 0xLTRB

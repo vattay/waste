@@ -21,7 +21,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "stdafx.hpp"
 #include "main.hpp"
 #include "xfers.hpp"
-#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+#if _DEFINE_WIN32_CLIENT
 	#include "xferwnd.hpp"
 	#include "srchwnd.hpp"
 #endif
@@ -274,7 +274,7 @@ void XferSend::run(C_MessageQueueList *mql)
 			unsigned int x=chunks_to_send[chunks_to_send_pos++];
 			if (x >= 0 && x < m_filelen_chunks) {
 				unsigned int newpos_l=x*FILE_CHUNKSIZE;
-				#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+				#if _DEFINE_WIN32_CLIENT
 					unsigned int newpos_h=(unsigned int) (((__int64)x*(__int64)FILE_CHUNKSIZE)>>32);
 				#else
 					unsigned int newpos_h=0;
@@ -314,7 +314,7 @@ void XferSend::run(C_MessageQueueList *mql)
 				m_chunks_sent_total++;
 			};
 
-			#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+			#if _DEFINE_WIN32_CLIENT
 				if (g_extrainf) {
 					updateStatusText();
 				};
@@ -323,7 +323,7 @@ void XferSend::run(C_MessageQueueList *mql)
 	}
 }
 
-#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+#if _DEFINE_WIN32_CLIENT
 	void XferSend::updateStatusText()
 	{
 		char s[128];
@@ -351,7 +351,7 @@ void XferSend::onGotMsg(C_FileSendRequest *req)
 		else {
 			sprintf(m_err_buf,"Aborted @ %d%%",
 				(m_chunks_sent_total*100)/m_filelen_chunks);
-			#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+			#if _DEFINE_WIN32_CLIENT
 				if (g_extrainf) sprintf(m_err_buf+strlen(m_err_buf)," (%d/%d)", m_chunks_sent_total,m_filelen_chunks);
 			#endif
 		};
@@ -389,18 +389,15 @@ void XferSend::onGotMsg(C_FileSendRequest *req)
 	m_reply.set_chunkcount(chunks_to_send_len);
 	unsigned int tm=GetTickCount()-m_starttime;
 
-	#ifdef _WIN32
-		if (tm) m_last_cps=MulDiv(m_chunks_sent_total-m_lastchunkcnt,1000*FILE_CHUNKSIZE,tm);
-		else m_last_cps=0;
-	#else
-		if (tm) m_last_cps=((m_chunks_sent_total-m_lastchunkcnt)*1000*FILE_CHUNKSIZE) / (tm);
-		else m_last_cps=0;
-	#endif
+	if (tm)
+		m_last_cps=MulDiv(m_chunks_sent_total-m_lastchunkcnt,1000*FILE_CHUNKSIZE,tm);
+	else
+		m_last_cps=0;
 
 	m_starttime=GetTickCount();
 	m_lastchunkcnt=m_chunks_sent_total;
 
-	#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+	#if _DEFINE_WIN32_CLIENT
 		updateStatusText();
 	#endif
 }
@@ -444,7 +441,7 @@ void recursive_create_dir(char *directory)
 
 XferRecv::XferRecv(C_MessageQueueList *mql, const char *guididx, const char *sizestr, const char *filename, const char *path)
 {
-	#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+	#if _DEFINE_WIN32_CLIENT
 		/* this section updates the 'Downloads' tab when the transfers start
 		*/
 		g_lvrecv.InsertItem(0,filename,(int)this);
@@ -643,7 +640,7 @@ XferRecv::XferRecv(C_MessageQueueList *mql, const char *guididx, const char *siz
 		#endif
 		m_err="File already exists";
 
-		#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+		#if _DEFINE_WIN32_CLIENT
 			int idx=g_lvrecv.FindItemByParam((int)this);
 			if (idx!=-1) {
 				g_lvrecv.SetItemText(idx,3,"");
@@ -690,7 +687,7 @@ XferRecv::XferRecv(C_MessageQueueList *mql, const char *guididx, const char *siz
 	memset(m_hash,0,SHA_OUTSIZE);
 	m_next_stateflush_time=time(NULL)+WASTESTATE_FLUSH_DELAY;
 
-	int sig1=0, sig2=0;
+	unsigned sig1=0, sig2=0;
 	#ifdef XFER_WIN32_FILEIO
 		DWORD d;
 		if (m_hstatfile != INVALID_HANDLE_VALUE &&
@@ -706,7 +703,7 @@ XferRecv::XferRecv(C_MessageQueueList *mql, const char *guididx, const char *siz
 			(fread(&m_bytes_total_h,1,4,m_statfile)==4))
 	#endif
 		{
-			#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+			#if _DEFINE_WIN32_CLIENT
 				char s[32];
 				FormatSizeStr64(s,m_bytes_total_l,m_bytes_total_h);
 				g_lvrecv.SetItemText(0,1,s);
@@ -749,7 +746,7 @@ XferRecv::XferRecv(C_MessageQueueList *mql, const char *guididx, const char *siz
 					#endif
 						{
 							safe_strncpy(m_nick,nick,sizeof(m_nick));
-							#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+							#if _DEFINE_WIN32_CLIENT
 								int idx=g_lvrecv.FindItemByParam((int)this);
 								if (idx!=-1) {
 									g_lvrecv.SetItemText(idx,4,nick);
@@ -1104,7 +1101,7 @@ void XferRecv::onGotMsg(C_FileSendReply *reply)
 		bool bNewUsername=(strlen(m_nick)==0)&&(strlen(lasthdr->get_nick())>0);
 		if (bNewUsername) {
 			safe_strncpy(m_nick,lasthdr->get_nick(),sizeof(m_nick));
-			#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+			#if _DEFINE_WIN32_CLIENT
 				int idx=g_lvrecv.FindItemByParam((int)this);
 				if (idx!=-1) {
 					char s[32];
@@ -1218,7 +1215,9 @@ void XferRecv::onGotMsg(C_FileSendReply *reply)
 			chunks_coming--;
 			delete reply;
 
+#if _DEFINE_WIN32_CLIENT
 			char s[128];
+#endif // _DEFINE_WIN32_CLIENT
 
 			int a=GetTickCount()-m_next_cpstime;
 			if (a>=0) {
@@ -1229,11 +1228,7 @@ void XferRecv::onGotMsg(C_FileSendReply *reply)
 				m_cps_blks_pos++;
 				m_cps_blks_pos%=CPS_WINDOWSIZE;
 				unsigned int tm=CPS_WINDOWSIZE*CPS_WINDOWLEN;
-				#ifdef _WIN32
 					m_last_cps=MulDiv(m_chunk_cnt-m_chunk_startcnt - m_cps_blks[m_cps_blks_pos],1000*FILE_CHUNKSIZE,tm);
-				#else
-					m_last_cps=((m_chunk_cnt-m_chunk_startcnt - m_cps_blks[m_cps_blks_pos])*FILE_CHUNKSIZE)/(tm/1000);
-				#endif
 			};
 			int cps=m_last_cps;
 
@@ -1288,7 +1283,7 @@ void XferRecv::onGotMsg(C_FileSendReply *reply)
 						};
 					};
 
-					#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+					#if _DEFINE_WIN32_CLIENT
 						sprintf(s,"Completed @ %d.%02dk/s",
 							cps/1000,(cps/10)%100);
 						if (m_total_chunks_recvd > m_chunk_cnt && m_chunk_cnt) {
@@ -1318,15 +1313,13 @@ void XferRecv::onGotMsg(C_FileSendReply *reply)
 			};
 			if (!m_done) {
 				int left;
-				if (!cps) left=0;
-				#ifdef _WIN32
-				else left=MulDiv(m_chunk_total-m_chunk_cnt,FILE_CHUNKSIZE,cps);
-				#else
-				else left=((m_chunk_total-m_chunk_cnt)*FILE_CHUNKSIZE)/cps;
-				#endif
+				if (!cps)
+					left=0;
+				else
+					left=MulDiv(m_chunk_total-m_chunk_cnt,FILE_CHUNKSIZE,cps);
 				if (left<0)left=0;
 
-				#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+				#if _DEFINE_WIN32_CLIENT
 					sprintf(s,"%d%%@%d.%02dk/s [%d:%02d ETA]",
 						(m_chunk_cnt*100)/m_chunk_total,
 						cps/1000,(cps/10)%100,

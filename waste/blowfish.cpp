@@ -438,14 +438,12 @@ class opmode_ecb
 {
 public:
 	static const unsigned int blocklen=8;
-	static forceinline void Encrypt(_BLOWFISH_CTX *ctx,unsigned long *IV_L,unsigned long *IV_R,unsigned long *left,unsigned long *right)
+	static forceinline void Encrypt(_BLOWFISH_CTX *ctx,unsigned long * /* IV_L */,unsigned long * /* IV_R */,unsigned long *left,unsigned long *right)
 	{
-		IV_L;IV_R;
 		Blowfish_Encrypt(ctx,left,right);
 	};
-	static forceinline void Decrypt(_BLOWFISH_CTX *ctx,unsigned long *IV_L,unsigned long *IV_R,unsigned long *left,unsigned long *right)
+	static forceinline void Decrypt(_BLOWFISH_CTX *ctx,unsigned long * /* IV_L */,unsigned long * /* IV_R */,unsigned long *left,unsigned long *right)
 	{
-		IV_L;IV_R;
 		Blowfish_Decrypt(ctx,left,right);
 	};
 };

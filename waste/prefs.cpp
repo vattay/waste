@@ -24,11 +24,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 #include "main.hpp"
 
-#ifdef _DEFINE_SRV
-#include "resourcesrv.hpp"
-#else
-#include "resource.hpp"
-#endif
+#include "resources.hpp"
 
 #include "sha.hpp"
 #include "childwnd.hpp"

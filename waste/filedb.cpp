@@ -637,9 +637,10 @@ int C_FileDB::DoScan(int maxtime, C_FileDB *oldDB)
 			if (s.dir_h == 0)
 		#endif
 			{
-				char maskstr[2048];
 				if (!s.cur_path[0]) continue;
 				#ifdef _WIN32
+					char maskstr[2048];
+
 					sprintf(maskstr,"%s\\*.*",s.cur_path);
 					s.h=::FindFirstFile(maskstr,&d);
 					if (s.h == INVALID_HANDLE_VALUE) {
@@ -1102,11 +1103,7 @@ static int GetXingHeader(XHEADDATA *X,  unsigned char *buf)
 				XHEADDATA Xing_hdr={0,};
 				if (GetXingHeader(&Xing_hdr,(unsigned char *)buf) && Xing_hdr.flags&FRAMES_FLAG) {
 					is_vbr=Xing_hdr.frames;
-					#ifdef _WIN32
 						is_vbr_lens=Xing_hdr.samprate?MulDiv(Xing_hdr.frames,Xing_hdr.h_id?1152:576,Xing_hdr.samprate):0;
-					#else
-						is_vbr_lens=Xing_hdr.samprate?(Xing_hdr.frames*(Xing_hdr.h_id?1152:576)/Xing_hdr.samprate):0;
-					#endif
 				};
 			};
 			flen = filelen;

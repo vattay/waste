@@ -24,12 +24,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "netq.hpp"
 #include "netkern.hpp"
 
-#ifdef _DEFINE_SRV
-	#include "resourcesrv.hpp"
-#else
-	#include "resource.hpp"
-#endif
-#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+#include "resources.hpp"
+#if _DEFINE_WIN32_CLIENT
 	#include "childwnd.hpp"
 #endif
 #include "m_search.hpp"
@@ -39,7 +35,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 C_ItemList<C_Connection> g_new_net;
 
-#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+#if _DEFINE_WIN32_CLIENT
 	W_ListView g_lvnetcons;
 	HWND g_netstatus_wnd;
 #endif
@@ -69,7 +65,7 @@ static void ListenToSocket()
 			}
 			else {
 				c->send_bytes(g_con_str,SYNC_SIZE);
-				#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+				#if _DEFINE_WIN32_CLIENT
 					struct in_addr in;
 					in.s_addr=addr;
 					char *a=inet_ntoa(in);
@@ -80,7 +76,7 @@ static void ListenToSocket()
 					g_lvnetcons.SetItemText(0,2,"100");
 				#endif
 				g_new_net.Add(c);
-				#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+				#if _DEFINE_WIN32_CLIENT
 					PostMessage(g_netstatus_wnd,WM_USER_TITLEUPDATE,0,0);
 				#endif
 			};
@@ -110,7 +106,7 @@ void NetKern_ConnectToHostIfOK(unsigned long ip, unsigned short port)
 		};
 	};
 
-	#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+	#if _DEFINE_WIN32_CLIENT
 		int netqpos=-1;
 		int i,l;
 		l=g_lvnetcons.GetCount();
@@ -135,7 +131,7 @@ void NetKern_ConnectToHostIfOK(unsigned long ip, unsigned short port)
 		newcon->send_bytes(g_con_str,SYNC_SIZE);
 		g_new_net.Add(newcon);
 
-		#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+		#if _DEFINE_WIN32_CLIENT
 			if (netqpos<0) {
 				char buf[1024];
 				sprintf(buf,"%s:%d",text,(int)(unsigned short)port);
@@ -193,7 +189,7 @@ void RebroadcastCaps(C_MessageQueueList *mql) //sends a local message to every h
 
 static void HandleNewOutCons()
 {
-	#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+	#if _DEFINE_WIN32_CLIENT
 		static unsigned int next_runitem;
 
 		int a=GetTickCount()-next_runitem;
@@ -269,13 +265,13 @@ static void HandleNewOutCons()
 			};
 			next_runitem=GetTickCount()+NEXTITEM_NEW_OUT_CONNECTION_DELAY;
 		};
-	#endif// defined(_WIN32)&&(!defined(_DEFINE_SRV))
+	#endif// _DEFINE_WIN32_CLIENT
 	int x;
 	for (x = 0; x < g_new_net.GetSize(); x ++) {
 		C_Connection *cc=g_new_net.Get(x);
 		int s=cc->run(-1,-1);
 		if (s == C_Connection::STATE_DIENOW) {
-			#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+			#if _DEFINE_WIN32_CLIENT
 				int a=g_lvnetcons.FindItemByParam((int)cc);
 				if (a >= 0) {
 					g_lvnetcons.DeleteItem(a);
@@ -287,12 +283,12 @@ static void HandleNewOutCons()
 			log_printf(ds_Warning,"Could not connect to host: host %s not in access list!",ad);
 			delete cc;
 			g_new_net.Del(x--);
-			#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+			#if _DEFINE_WIN32_CLIENT
 				PostMessage(g_netstatus_wnd,WM_USER_TITLEUPDATE,0,0);
 			#endif
 		}
 		else if (s == C_Connection::STATE_CLOSED || s == C_Connection::STATE_ERROR) {
-			#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+			#if _DEFINE_WIN32_CLIENT
 				unsigned short port=cc->get_remote_port();
 				int irat=0;
 				int a=g_lvnetcons.FindItemByParam((int)g_new_net.Get(x));
@@ -332,7 +328,7 @@ static void HandleNewOutCons()
 			log_printf(ds_Warning,"Could not connect to host: failed connect to %s!", ad);
 			delete cc;
 			g_new_net.Del(x--);
-			#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+			#if _DEFINE_WIN32_CLIENT
 				PostMessage(g_netstatus_wnd,WM_USER_TITLEUPDATE,0,0);
 			#endif
 		}
@@ -340,7 +336,7 @@ static void HandleNewOutCons()
 			char b[SYNC_SIZE];
 			cc->recv_bytes(b,SYNC_SIZE);
 			if (!cc->PopRandomCrap()) {
-				#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+				#if _DEFINE_WIN32_CLIENT
 					int a=g_lvnetcons.FindItemByParam((int)cc);
 					if (a >= 0) {
 						g_lvnetcons.DeleteItem(a);
@@ -349,12 +345,12 @@ static void HandleNewOutCons()
 				log_printf(ds_Error,"Cannot pop random crap. Bad shit happened!");
 				delete cc;
 				g_new_net.Del(x--);
-				#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+				#if _DEFINE_WIN32_CLIENT
 					PostMessage(g_netstatus_wnd,WM_USER_TITLEUPDATE,0,0);
 				#endif
 			}
 			else if (memcmp(b,g_con_str,SYNC_SIZE)) {
-				#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+				#if _DEFINE_WIN32_CLIENT
 					int a=g_lvnetcons.FindItemByParam((int)cc);
 					if (a >= 0) {
 						g_lvnetcons.DeleteItem(a);
@@ -368,7 +364,7 @@ static void HandleNewOutCons()
 				log_printf(ds_Warning,"Could not connect to host: failed auth by %s (%s)! Wrong network password?",ad,descstr_l);
 				delete cc;
 				g_new_net.Del(x--);
-				#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+				#if _DEFINE_WIN32_CLIENT
 					PostMessage(g_netstatus_wnd,WM_USER_TITLEUPDATE,0,0);
 				#endif
 			}
@@ -411,7 +407,7 @@ static void HandleNewOutCons()
 						if (in1>0 && numincons>=in1) {
 							log_printf(ds_Warning,"Limiter: Host %s as %s cannot connect, because incoming connection limit is reached!",ad,descstr_l);
 						};
-						#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+						#if _DEFINE_WIN32_CLIENT
 							int a=g_lvnetcons.FindItemByParam((int)cc);
 							if (a >= 0) {
 								g_lvnetcons.DeleteItem(a);
@@ -420,14 +416,14 @@ static void HandleNewOutCons()
 						delete cc;
 						g_new_net.Del(x--);
 						allowconnection=false;
-						#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+						#if _DEFINE_WIN32_CLIENT
 							PostMessage(g_netstatus_wnd,WM_USER_TITLEUPDATE,0,0);
 						#endif
 					}
 				};
 
 				if (allowconnection) {
-					#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+					#if _DEFINE_WIN32_CLIENT
 						int a=g_lvnetcons.FindItemByParam((int)cc);
 						if (a >= 0) {
 							char newconstr[512];
@@ -460,7 +456,7 @@ static void HandleNewOutCons()
 					g_mql->AddMessageQueue(newq);
 					DoPing(newq);
 					g_new_net.Del(x--);
-					#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+					#if _DEFINE_WIN32_CLIENT
 						PostMessage(g_netstatus_wnd,WM_USER_TITLEUPDATE,0,0);
 					#endif
 				};
@@ -481,7 +477,7 @@ void AddConnection(char *str, unsigned short port, int rating)
 	newcon=new C_Connection(str,port,g_dns);
 	newcon->send_bytes(g_con_str,SYNC_SIZE);
 	g_new_net.Add(newcon);
-	#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+	#if _DEFINE_WIN32_CLIENT
 		char str2[512];
 		sprintf(str2,"%s:%d",str,(int)(unsigned short)port);
 		g_lvnetcons.InsertItem(0,"Connecting",(int)newcon);
@@ -578,7 +574,7 @@ void DoPing(C_MessageQueue *mq)
 	};
 }
 
-#if defined(_WIN32)&&(!defined(_DEFINE_SRV))
+#if _DEFINE_WIN32_CLIENT
 	BOOL WINAPI Net_DlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
 		static dlgSizeInfo sizeinf={"net",90,140,440,330};
