@@ -24,4 +24,4 @@ wastesrv: $(OBJS) $(RSA_OBJS)
 	$(CXX) $(STYLE_FLAGS) -o wastesrv $(OBJS) $(RSA_OBJS)
 
 clean:
-       -rm *.o rsa/*.o wastesrv
+	-rm *.o rsa/*.o wastesrv

@@ -21,7 +21,7 @@ CXXFLAGS = $(CFLAGS)
 default: wastesrv
 
 wastesrv: $(OBJS) $(RSA_OBJS)
-	$(CXX) $(DEBUGFLAG) -o wastesrv -pthread $(OBJS) $(RSA_OBJS)
+	$(CXX) $(STYLE_FLAGS) -o wastesrv -pthread $(OBJS) $(RSA_OBJS)
 
 clean:
 	-rm *.o rsa/*.o wastesrv
