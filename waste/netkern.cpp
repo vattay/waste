@@ -23,6 +23,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "main.hpp"
 #include "netq.hpp"
 #include "netkern.hpp"
+#include "connection.hpp"
 
 #include "resources.hpp"
 #if _DEFINE_WIN32_CLIENT
@@ -819,7 +820,8 @@ void DoPing(C_MessageQueue *mq)
 						int a,n=g_lvnetcons.GetCount();
 						for (a = 0; a < n; a ++) {
 							if (g_lvnetcons.GetSelected(a)) {
-								if (g_lvnetcons.GetParam(a)) isCon++;
+								C_Connection *c=(C_Connection *)g_lvnetcons.GetParam(a);
+								if (c->get_state()==C_Connection::STATE_CONNECTED) isCon++;
 								else isDiscon++;
 							};
 							if (isCon && isDiscon) break;
