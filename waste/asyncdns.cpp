@@ -107,6 +107,7 @@ void C_AsyncDNS::invalidate(char *hostname)
 	for(x = 0; x < m_cache_size; x ++) {
 		if (!stricmp(m_cache[x].hostname,hostname)){
 			memset(&m_cache[x], 0, sizeof(cache_entry));
+			log_printf(ds_Informational,"Deleting DNS cache entry for %s", hostname);
 			return;
 		}
 	}
