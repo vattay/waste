@@ -170,17 +170,22 @@ int main(int argc, char **argv)
 {
 	g_log_level=ds_Console;
 	_logfile=stderr;
+	bool daemonise = false;
+	const char *profile = NULL;
+	const char *logpath = NULL;
 
 	{
-		bool dohelp=false;
-		if (argc<2) {
-			dohelp=true;
-		}
-		else {
-			if (!strcmp(argv[1],"-i")) {
+		bool dohelp = true;
+		int i;
+		
+		for (i = 1; i < argc; i++)
+		{
+			if (!strcmp(argv[i],"-i")) {
 				log_printf(ds_Console,"Interactive!");
+				daemonise = false;
+				dohelp = false;
 			}
-			else if (!strcmp(argv[1],"-L")) {
+			else if (!strcmp(argv[i],"-L")) {
 				char *szLI2;
 				szLI2=(char*)malloc(sK0[3]);
 				safe_strncpy(szLI2,(char*)sK1[3],sK0[3]);
@@ -190,23 +195,27 @@ int main(int argc, char **argv)
 				memset(szLI2,0,sK0[3]);free(szLI2);
 				return 1;
 			}
-			else if (!strcmp(argv[1],"-d")) {
-				if (argc==3) {
-					log_printf(ds_Console,"Forking DAEMON!");
-					log_UpdatePath(argv[2],true);
-					#ifndef _WIN32
-						daemon(1,0);
-					#endif
-					log_printf(ds_Console,"DAEMON!");
+			else if (!strcmp(argv[i],"-d")) {
+				daemonise = true;
+				if (++i < argc) {
+					logpath = argv[i];
+					dohelp = false;
 				}
-				else {
-					dohelp=true;
-				};
+				else
+					break;
 			}
-			else {
-				dohelp=true;
-			};
-		};
+			else if (!strcmp(argv[i],"-p")) {
+				if (++i < argc) {
+					profile = argv[i];
+					dohelp = false;
+				}
+				else
+					break;
+			}
+			else
+				break;
+		}
+
 		if (dohelp) {
 			char *szCR2;
 			szCR2=(char*)malloc(sK0[1]);
@@ -218,8 +227,9 @@ int main(int argc, char **argv)
 				"%s\n"
 				"%s\n"
 				"\n"
-				"Usage: wastesrv <-i> | -d <logfile>\n"
+				"Usage: wastesrv [-p <profile>] [-L] [-i] | [-d <logfile>]\n"
 				"\t -L print license\n"
+				"\t -p profile to use (default)\n"
 				"\t -i interactive mode\n"
 				"\t -d daemon mode (on *nix this will put wastesrv in the background)\n"
 				"\n"
@@ -230,22 +240,33 @@ int main(int argc, char **argv)
 				);
 			memset(szCR2,0,sK0[1]);free(szCR2);
 			return 1;
-		};
-	};
+		}
+	}
+
+	if (daemonise) {
+		assert(logpath);
+		log_printf(ds_Console,"Forking DAEMON!");
+		log_UpdatePath(logpath, true);
+		#ifndef _WIN32
+			daemon(1,0);
+		#endif
+		log_printf(ds_Console,"DAEMON!");
+	}
+
+    if (!profile)
+		profile = "default";
 
 	// TODO: gvdl should take a directory argument
 	SetProgramDirectory(argv[0]);
 
 	installsighandler();
 
-	log_printf(ds_Console,"%s starting up...",g_nameverstr);
+	log_printf(ds_Console,"%s starting up...%s.pr0",g_nameverstr, profile);
 
 	MYSRAND();
 	if (!g_exit) //emergency break!
 	{
-		// TODO: gvdl should take a profile argument
-		strcat(g_config_prefix,"default");
-
+		strcat(g_config_prefix, profile);
 
 		#ifdef _WIN32
 			WSADATA wsaData;
@@ -264,10 +285,8 @@ int main(int argc, char **argv)
 
 		if (!g_key.bits) {
 			reloadKey(
-				g_config->ReadInt(CONFIG_storepass,CONFIG_storepass_DEFAULT)?
-				g_config->ReadString(CONFIG_keypass,CONFIG_keypass_DEFAULT):
-				NULL
-				);
+				g_config->ReadInt(CONFIG_storepass,CONFIG_storepass_DEFAULT),
+				(char *) g_config->ReadString(CONFIG_keypass,CONFIG_keypass_DEFAULT));
 		};
 
 		InitializeNetworkparts();
