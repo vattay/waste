@@ -452,8 +452,8 @@ void C_Connection::calc_bps(int *send, int *recv)
 	unsigned int timediff=now-bps_count[bps_count_pos].time_ms;
 	if (timediff < 1) timediff=1;
 
-		m_last_sendbps=MulDiv(m_send_bytes_total-bps_count[bps_count_pos].send_bytes,1000,timediff);
-		m_last_recvbps=MulDiv(m_recv_bytes_total-bps_count[bps_count_pos].recv_bytes,1000,timediff);
+	m_last_sendbps=MulDiv(m_send_bytes_total-bps_count[bps_count_pos].send_bytes,1000,timediff);
+	m_last_recvbps=MulDiv(m_recv_bytes_total-bps_count[bps_count_pos].recv_bytes,1000,timediff);
 
 	if (send) *send=m_last_sendbps;
 	if (recv) *recv=m_last_recvbps;

@@ -35,6 +35,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #if _DEFINE_WIN32_CLIENT
 	#include "listview.hpp"
 #endif
+
 #include "sha.hpp"
 
 //global strings

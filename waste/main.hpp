@@ -105,7 +105,7 @@ extern int g_last_pingid_used;
 extern T_GUID g_client_id;
 extern char g_client_id_str[33];
 
-void InitNeworkHash();
+extern void InitNetworkHash();
 extern unsigned char g_networkhash[SHA_OUTSIZE];
 extern int g_use_networkhash;
 extern int g_networkhash_PSK;

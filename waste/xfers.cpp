@@ -1228,7 +1228,7 @@ void XferRecv::onGotMsg(C_FileSendReply *reply)
 				m_cps_blks_pos++;
 				m_cps_blks_pos%=CPS_WINDOWSIZE;
 				unsigned int tm=CPS_WINDOWSIZE*CPS_WINDOWLEN;
-					m_last_cps=MulDiv(m_chunk_cnt-m_chunk_startcnt - m_cps_blks[m_cps_blks_pos],1000*FILE_CHUNKSIZE,tm);
+				m_last_cps=MulDiv(m_chunk_cnt-m_chunk_startcnt - m_cps_blks[m_cps_blks_pos],1000*FILE_CHUNKSIZE,tm);
 			};
 			int cps=m_last_cps;
 

@@ -225,7 +225,7 @@ static void RunRecvs()
 	int needrefresh=0;
 
 	#if _DEFINE_WIN32_CLIENT
-	static unsigned int next_runitem;
+		static unsigned int next_runitem;
 
 		int a=GetTickCount()-next_runitem;
 		if (!next_runitem || a>=0) {

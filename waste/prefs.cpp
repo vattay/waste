@@ -1127,7 +1127,7 @@ static BOOL CALLBACK Pref_Network4Proc(HWND hwndDlg, UINT uMsg, WPARAM wParam,LP
 					GetDlgItemText(hwndDlg,IDC_EDIT_NETWORK_NAME,buf1,sizeof(buf1));
 					str_return_pack(buf2,buf1,sizeof(buf2),';');
 					g_config->WriteString(CONFIG_networkname,buf2);
-					InitNeworkHash();
+					InitNetworkHash();
 					memset(buf1,0,sizeof(buf1));
 					memset(buf2,0,sizeof(buf2));
 					if (g_use_networkhash && g_networkhash_PSK) {
@@ -3011,7 +3011,7 @@ static BOOL WINAPI SW_Proc1(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM /*lPa
 		char buf[4096];
 		GetDlgItemText(hwndDlg,IDC_EDIT_NETPASSWORD,buf,sizeof(buf));
 		g_config->WriteString(CONFIG_networkname,buf);
-		InitNeworkHash();
+		InitNetworkHash();
 		memset(buf,0,sizeof(buf));
 	};
 	if (uMsg == WM_COMMAND && wParam == MAKEWPARAM(IDC_EDIT_NICK,EN_CHANGE)) {
