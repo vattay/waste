@@ -3,11 +3,18 @@
 ; NOTE: NSIS 1.x is no longer supported! NSIS 2.x series is now very stable and must be used.
 ;       Many features used by this installer are not supported by NSIS 1.x.
 
+; Include the define for current IP
+!include "./defines.nsh"
+
 ; The defines wether to build as Full or Minimal. Full includes the support PDF. Comment this line out to build as minimal.
 !define FULL_BUILD
 
 ; Choose wether to support XP style
 !define XP_STYLE_ON
+
+; Choose wether IP display is enabled (displays at the end of installation)
+; This requires the Internet plugin available at: http://www.lobo-lunar.com/nsis/
+!define IP_SHOW_ON
 
 ; Reserve the custom welcome page for solid compression
 ReserveFile "setup-welcome.ini"
@@ -53,7 +60,7 @@ CheckBitmap "modern.bmp"
 InstProgressFlags smooth
 
 ; Force use to accept the license via checkbox
-LicenseForceSelection checkbox "I have read and understood the rights granted by the GNU GPL license."
+LicenseForceSelection checkbox "I have read, I understand, and I agree to this license and the rights granted by it."
 
 ; Installer information
 VIAddVersionKey ProductName "WASTE/DS"
@@ -284,12 +291,17 @@ Function .onInstSuccess
   RunItDetail:
   DetailPrint "New install detected. Enjoy your new ${APP_NAME_BIG} install! :D"
   RunIt:
+  !ifdef IP_SHOW_ON
+    Internet::GetLocalHostIP ${VAR_1}
+    DetailPrint "Your local IP is: $1 (this may be useful for configuring up WASTE)"
+  !endif
+  RunItNow:
   DetailPrint "Starting ${APP_NAME_BIG}..."
   Exec '"$INSTDIR\${APP_EXENAME}"'
   Goto Exit
   DontRunIt:
   DetailPrint "${APP_NAME_BIG} has been previously installed. Enjoy the upgrade! :D"
-  MessageBox MB_YESNO|MB_ICONQUESTION "${APP_NAME_VER} installed sucessfully, would you like to start ${APP_NAME_BIG}?" IDYES RunIt
+  MessageBox MB_YESNO|MB_ICONQUESTION "${APP_NAME_VER} installed sucessfully, would you like to start ${APP_NAME_BIG}?" IDYES RunItNow
   Exit:
 FunctionEnd
 
