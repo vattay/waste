@@ -173,7 +173,7 @@ SubSectionEnd
 
 ;SubSectionEnd
 
-; This runs after the post install
+; This runs after the section installation
 Section -post
 
   WriteRegStr HKLM SOFTWARE\${APP_NAME_SMALL} "" $INSTDIR
@@ -205,7 +205,8 @@ Section -post
   WriteUninstaller $INSTDIR\uninst.exe
 SectionEnd
 
-; If install is sucessful, this executes WASTE to complete setup.
+; If install is sucessful, and user profile has not been created, this executes WASTE to complete setup.
+; Otherwise this prompts to run WASTE or not.
 Function .onInstSuccess
   IfFileExists "$INSTDIR\default.pr0" 0 RunIt
   IfFileExists "$INSTDIR\default.pr1" 0 RunIt
@@ -216,24 +217,31 @@ Function .onInstSuccess
   Exec '"$INSTDIR\${APP_EXENAME}"'
   Goto Exit
   DontRunIt:
-  MessageBox MB_YESNO|MB_ICONQUESTION "${APP_NAME_VER} Installed sucessfully, would you like to start WASTE?" IDYES RunIt
+  MessageBox MB_YESNO|MB_ICONQUESTION "${APP_NAME_VER} installed sucessfully, would you like to start ${APP_NAME_BIG}?" IDYES RunIt
   Exit:
 FunctionEnd
 
 !ifndef NO_UNINST
 UninstallText "This will uninstall ${APP_NAME_BIG} from your system:"
 
+; This is the script for uninstallation
 Section Uninstall
+
+; Remove main exe, if it fails to remove prompt
 TryAgain:
   SetFileAttributes $INSTDIR\${APP_EXENAME} NORMAL
   Delete $INSTDIR\${APP_EXENAME}
   IfFileExists "$INSTDIR\${APP_EXENAME}" 0 DeletedEXE
     MessageBox MB_RETRYCANCEL|MB_ICONQUESTION "${APP_EXENAME} appears to be locked, please make sure ${APP_NAME_BIG} is not running before uninstalling." IDRETRY TryAgain
     Abort "${APP_EXENAME} could not be removed. ${APP_NAME_BIG} may have been running."
+
+; Delete other information and files
 DeletedEXE:
   
   Delete $INSTDIR\readme.txt
   Delete $INSTDIR\uninst.exe
+  Delete $INSTDIR\license.txt
+  Delete $INSTDIR\${APP_EXENAME}.manifest
   DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SMALL}"
   DeleteRegKey HKLM "Software\${APP_NAME_SMALL}"
   DeleteRegKey HKCR waste
@@ -245,6 +253,7 @@ DeletedEXE:
   RMDir $INSTDIR\Downloads
   RMDir /r $INSTDIR\Docs
 
+; If files are in the downloads dir, prompt to remove them
   IfFileExists $INSTDIR\downloads\*.* 0 NoDownloads
 
     MessageBox MB_YESNO|MB_ICONQUESTION "Remove any files you have downloaded (in $INSTDIR\downloads)?" IDNO NoDownloads
@@ -255,10 +264,12 @@ NoDownloads:
 
   RMDir $INSTDIR
   
+; If any files are still in the folder prompt
   MessageBox MB_YESNO|MB_ICONQUESTION "Remove network profiles from your ${APP_NAME_BIG} directory?" IDNO AllDone
-    Delete $INSTDIR\*.*
-    RMDir $INSTDIR
+    Delete $INSTDIR\*.pr?
+    Delete $INSTDIR\*.ini
   AllDone:
+    RMDir $INSTDIR
 SectionEnd
 
 !endif
