@@ -1,7 +1,7 @@
 OBJS = asyncdns.o blowfish.o config.o connection.o d_chat.o filedb.o license.o \
        listen.o m_chat.o m_file.o m_keydist.o m_lcaps.o m_ping.o m_search.o \
-       m_upload.o mqueue.o mqueuelist.o netkern.o sha.o sharedmain.o shbuf.o \
-       srchwnd.o srvmain.o util.o xfers.o xferwnd.o 
+       m_upload.o mqueue.o mqueuelist.o netkern.o netq.o sha.o sharedmain.o \
+       shbuf.o srchwnd.o srvmain.o util.o xfers.o xferwnd.o 
 
 ADMIN_OBJS = blowfish.o config.o license.o sha.o  wastesrv_admin.o
 
