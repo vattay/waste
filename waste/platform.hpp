@@ -21,9 +21,26 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #ifndef _PLATFORM_H_
 #define _PLATFORM_H_
 
+#ifdef _WIN32
+
 #include "stdafx.hpp"
 
-#ifndef _WIN32
+#ifdef _MSC_VER
+	#pragma intrinsic(_byteswap_ulong)
+	#pragma intrinsic(_byteswap_ushort)
+#endif
+
+// Byte swap routines host to big routines - don't bother with 64 bit yet
+static inline unsigned short htobus(unsigned short a)
+	{ return _byteswap_ushort(a); }
+static inline unsigned int   htobui(unsigned int   a)
+	{ return (unsigned int) _byteswap_ulong(a); }
+
+// Byte swap routines host to little routines - don't bother with 64 bit yet
+static inline unsigned short htolus(unsigned short a) { return a; }
+static inline unsigned int   htolui(unsigned int   a) { return a; }
+
+#else // !_WIN32
 
 #define THREAD_SAFE
 #define _REENTRANT
@@ -49,6 +66,12 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include <ctype.h>
 #include <assert.h>
 
+#if __APPLE__
+#include <architecture/byte_order.h>
+#else
+#include <byteswap.h>
+#endif
+
 #define DIRCHAR '/'
 #define CharNext(x) (x+1)
 #define CharPrev(s,x) ((s)<(x)?(x)-1:(s))
@@ -59,6 +82,62 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #define stricmp(x,y) strcasecmp(x,y)
 #define strnicmp(x,y,z) strncasecmp(x,y,z)
 #define _vsnprintf vsnprintf
+
+#if __BIG_ENDIAN__
+
+// Byte swap routines host to big routines - don't bother with 64 bit yet
+#if __APPLE__
+
+static inline unsigned short htolus(unsigned short a)
+	{ return OSSwapHostToLittleInt16(a); }
+static inline unsigned int  htolui(unsigned int a)
+	{ return OSSwapHostToLittleInt32(a); }
+
+#else // Assume it is gnu/linux
+
+static inline unsigned short htolus(unsigned short a)
+	{ return bswap_16(a); }
+static inline unsigned int   htolui(unsigned int a)
+	{ return bswap_32(a); }
+#endif // __APPLE__
+
+// Byte swap routines host to big routines - don't bother with 64 bit yet
+static inline unsigned short htobus(unsigned short a) { return a; }
+static inline unsigned int   htobui(unsigned int   a) { return a; }
+
+#else // Not __BIG_ENDIAN__
+
+// Byte swap routines host to little routines - don't bother with 64 bit yet
+static inline unsigned short htolus(unsigned short a) { return a; }
+static inline unsigned int   htolui(unsigned int   a) { return a; }
+
+static inline unsigned short htobus(unsigned short a)
+	{ return bswap_16(a); }
+static inline unsigned int   htobui(unsigned int a)
+	{ return bswap_32(a); }
+
+#endif // __BIG_ENDIAN__
+
+// Implement the signed swaps in terms of the unsigned implementations
+static inline short htols(short a)
+	{ return (short) htolus((unsigned short) a); }
+static inline int  htoli(int a)
+	{ return (int)   htolui((uint32_t) a); }
+static inline short htobs(short a)
+	{ return (short) htobus((unsigned short) a); }
+static inline int  htobi(int a)
+	{ return (int)   htobui((uint32_t) a); }
+
+// Mirror image byte swap routines.
+#define ltohus htolus
+#define ltohui htolui
+#define ltohs htols
+#define ltohi htoli
+
+#define btohus htobus
+#define btohui htobui
+#define btohs htobs
+#define btohi htobi
 
 static inline char *safe_strncpy(char *out, const char *in, int maxl)
 	{ return strncpy(out,in,maxl); out[maxl-1]=0; }

@@ -38,24 +38,6 @@ C++ implementation by Md5Chap
 	#define forceinline
 #endif
 
-#ifdef _MSC_VER
-	#pragma intrinsic(_byteswap_ulong)
-	#define SWAP(x) _byteswap_ulong(x)
-#else
-	static forceinline unsigned long SWAP(unsigned long x)
-	{
-		unsigned char* c=(unsigned char*)&x;
-		unsigned char t;
-		t=c[0];
-		c[0]=c[3];
-		c[3]=t;
-		t=c[1];
-		c[1]=c[2];
-		c[2]=t;
-		return x;
-	}
-#endif
-
 static const unsigned long ORIG_P[16 + 2] =
 {
 	0x243F6A88ul, 0x85A308D3ul, 0x13198A2Eul, 0x03707344ul,
@@ -326,7 +308,6 @@ static const unsigned long ORIG_S[4*256] =
 };
 
 #define GETBYTE(x,y) ((((unsigned int)x)>>(8*(y)))&0xff)
-#define SETBYTE(x,y,z) ((unsigned char *)(&x))[y]=z
 #define ISALIGN(x,y) ((((unsigned int)x)&(y-1))==0)
 #define ISLONGALIGN(x) ISALIGN(x,sizeof(long))
 
@@ -334,102 +315,121 @@ static const unsigned long ORIG_S[4*256] =
 #define F(x) ((( E(x,0) + E(x,1) ) ^ E(x,2)) + E(x,3))
 #define ROUNDNOSWAP(Xl,Xr,P) Xr^=F(Xl)^P
 
-static void forceinline Blowfish_Encrypt(_BLOWFISH_CTX *ctx, unsigned long *xl, unsigned long *xr)
+// Both of these routines are implemented in 'native-byte' order
+// It is assumed that the bytes have been swapped into little endian
+// higher up.
+static void forceinline Blowfish_Encrypt(_BLOWFISH_CTX *ctx, unsigned long &xl, unsigned long &xr)
 {
-	unsigned long Xl=*xl, Xr=*xr;
+	unsigned long Xl = xl, Xr = xr;	// Local copies
 	unsigned long *p=ctx->P;
 	unsigned long *s=ctx->S;
-	Xl = Xl ^ *p++;
-	unsigned int i;
-	for (i=0;i<(16/2);i++) {
-		ROUNDNOSWAP(Xl,Xr,*p++);ROUNDNOSWAP(Xr,Xl,*p++);
-	};
-	Xr = Xr ^ *p;
-	*xl = Xr; //SWAP
-	*xr = Xl; //SWAP
+
+	// Unroll the encryption loop
+	Xl ^= p[ 0];
+	ROUNDNOSWAP(Xl, Xr, p[ 1]); ROUNDNOSWAP(Xr, Xl, p[ 2]);
+	ROUNDNOSWAP(Xl, Xr, p[ 3]); ROUNDNOSWAP(Xr, Xl, p[ 4]);
+	ROUNDNOSWAP(Xl, Xr, p[ 5]); ROUNDNOSWAP(Xr, Xl, p[ 6]);
+	ROUNDNOSWAP(Xl, Xr, p[ 7]); ROUNDNOSWAP(Xr, Xl, p[ 8]);
+	ROUNDNOSWAP(Xl, Xr, p[ 9]); ROUNDNOSWAP(Xr, Xl, p[10]);
+	ROUNDNOSWAP(Xl, Xr, p[11]); ROUNDNOSWAP(Xr, Xl, p[12]);
+	ROUNDNOSWAP(Xl, Xr, p[13]); ROUNDNOSWAP(Xr, Xl, p[14]);
+	ROUNDNOSWAP(Xl, Xr, p[15]); ROUNDNOSWAP(Xr, Xl, p[16]);
+	Xr ^= p[17];
+
+	xl = Xr; xr = Xl; 
 }
 
-static void forceinline Blowfish_Decrypt(_BLOWFISH_CTX *ctx, unsigned long *xl, unsigned long *xr)
+static void forceinline Blowfish_Decrypt(_BLOWFISH_CTX *ctx, unsigned long &xl, unsigned long &xr)
 {
-	unsigned long Xl=*xl, Xr=*xr;
-	unsigned long *p=ctx->P+16+1;
-	unsigned long *s=ctx->S;
-	Xl = Xl ^ *p--;
-	unsigned int i;
-	for (i=0;i<(16/2);i++) {
-		ROUNDNOSWAP(Xl,Xr,*p--);ROUNDNOSWAP(Xr,Xl,*p--);
-	};
-	Xr = Xr ^ *p;
-	*xl = Xr; //SWAP
-	*xr = Xl; //SWAP
+	unsigned long Xl = xl, Xr = xr;	// Local copies
+	unsigned long *p = ctx->P;
+	unsigned long *s = ctx->S;
+
+	Xl ^= p[17];
+	ROUNDNOSWAP(Xl, Xr, p[16]); ROUNDNOSWAP(Xr, Xl, p[15]);
+	ROUNDNOSWAP(Xl, Xr, p[14]); ROUNDNOSWAP(Xr, Xl, p[13]);
+	ROUNDNOSWAP(Xl, Xr, p[12]); ROUNDNOSWAP(Xr, Xl, p[11]);
+	ROUNDNOSWAP(Xl, Xr, p[10]); ROUNDNOSWAP(Xr, Xl, p[ 9]);
+	ROUNDNOSWAP(Xl, Xr, p[ 8]); ROUNDNOSWAP(Xr, Xl, p[ 7]);
+	ROUNDNOSWAP(Xl, Xr, p[ 6]); ROUNDNOSWAP(Xr, Xl, p[ 5]);
+	ROUNDNOSWAP(Xl, Xr, p[ 4]); ROUNDNOSWAP(Xr, Xl, p[ 3]);
+	ROUNDNOSWAP(Xl, Xr, p[ 2]); ROUNDNOSWAP(Xr, Xl, p[ 1]);
+	Xr ^= p[ 0];
+
+	xl = Xr; xr = Xl; 
 }
 
 static void Blowfish_Init(_BLOWFISH_CTX *ctx, const unsigned char *key, unsigned int keyLen)
 {
-	static const unsigned long dummy=0;
+	static const unsigned long dummy = 0;
 	unsigned int i;
 	unsigned long *p,*s;
 
-	ASSERT(keyLen>=4);
-	ASSERT(keyLen<=56);//448 bit max!
+	ASSERT(keyLen >=  4);
+	ASSERT(keyLen <= 56);//448 bit max!
 
-	if (keyLen<4) { //SOS!
-		key=(const unsigned char*)&dummy;
-		keyLen=4;
-	};
-	if (keyLen>56) { //SOS!
-		keyLen=56;
-	};
+	if (keyLen < 4) { //SOS!
+		key = (const unsigned char*) &dummy;
+		keyLen = 4;
+	}
+	if (keyLen > 56) { //SOS!
+		keyLen = 56;
+	}
 
 	{
-		p=ctx->P;
-		const unsigned long *p0=ORIG_P;
-		unsigned int j=0;
-		if (ISLONGALIGN(key)&&ISLONGALIGN(keyLen)) {
-			unsigned long *pulkey=(unsigned long*)key;
-			unsigned long *pulmaxkey=(unsigned long*)(key+keyLen);
-			for (i=0;i<(16+2);i++) {
-				*p++ = *p0++ ^ SWAP(*pulkey++);
-				if (pulkey>=pulmaxkey) pulkey=(unsigned long*)key;
-			};
+        // Strangely this algorithm takes the key and does a big-endian
+        // conversion.  The weird thing is that the Blowfish_Encrypt
+        // definitely assume the input data is little endian.
+		const unsigned long *p0 = ORIG_P;
+
+		p = ctx->P;
+		if (ISLONGALIGN(key) && ISLONGALIGN(keyLen)) {
+			unsigned long *pulkey = (unsigned long*) key;
+			unsigned long *pulmaxkey = (unsigned long*) (key + keyLen);
+			for (i = 0; i < (16+2); i++) {
+				*p++ = *p0++ ^ htobui(*pulkey++);
+				if (pulkey >= pulmaxkey)
+					pulkey = (unsigned long*) key;
+			}
 		}
 		else {
-			unsigned long data=0;
-			for (i=0;i<(16+2);i++) {
-				unsigned int k;
-				for (k=0;k<4;k++) {
-					SETBYTE(data,3-k,key[j]);if (++j >= keyLen) j = 0;
-				};
+			unsigned int j = 0;
+			for (i = 0; i < (16+2); i++) {
+				unsigned long data = 0;
+				for (unsigned k = 0; k < 4; k++) {
+					data = (data << 8) | key[j];	// Keep in register
+					if (++j >= keyLen)
+						j = 0;
+				}
 				*p++ = *p0++ ^ data;
-			};
-		};
-	};
+			}
+		}
+	}
 
-	memcpy(ctx->S,ORIG_S,sizeof(ORIG_S));
+	memcpy(ctx->S, ORIG_S, sizeof(ORIG_S));
 
 	{
-		unsigned long datal, datar;
-		datal=0;datar=0;
+		unsigned long datal = 0, datar = 0;
 
-		p=ctx->P;
-		for (i=0;i<((16+2)/2);i++) {
-			Blowfish_Encrypt(ctx, &datal, &datar);
+		p = ctx->P;
+		for (i = 0; i< ((16+2)/2); i++) {
+			Blowfish_Encrypt(ctx, datal, datar);
 			*p++ = datal;
 			*p++ = datar;
-		};
+		}
 
-		s=ctx->S;
-		for (i=0;i<((4*256)/2);i++) {
-			Blowfish_Encrypt(ctx, &datal, &datar);
+		s = ctx->S;
+		for (i = 0; i < ((4*256)/2); i++) {
+			Blowfish_Encrypt(ctx, datal, datar);
 			*s++ = datal;
 			*s++ = datar;
-		};
-	};
+		}
+	}
 }
 
 static void Blowfish_Final(_BLOWFISH_CTX *ctx)
 {
-	memset(ctx,0,sizeof(_BLOWFISH_CTX));
+	memset(ctx, 0, sizeof(_BLOWFISH_CTX));
 }
 
 //----------------------------------------------------------------------------
@@ -438,13 +438,21 @@ class opmode_ecb
 {
 public:
 	static const unsigned int blocklen=8;
-	static forceinline void Encrypt(_BLOWFISH_CTX *ctx,unsigned long * /* IV_L */,unsigned long * /* IV_R */,unsigned long *left,unsigned long *right)
+	static forceinline void Encrypt(_BLOWFISH_CTX *ctx,unsigned long * /* IV_L */,unsigned long * /* IV_R */,unsigned long *lp,unsigned long *rp)
 	{
+		unsigned long left = htolui(*lp), right = htolui(*rp);
+
 		Blowfish_Encrypt(ctx,left,right);
+
+		*lp = ltohui(left); *rp = ltohui(right);
 	};
-	static forceinline void Decrypt(_BLOWFISH_CTX *ctx,unsigned long * /* IV_L */,unsigned long * /* IV_R */,unsigned long *left,unsigned long *right)
+	static forceinline void Decrypt(_BLOWFISH_CTX *ctx,unsigned long * /* IV_L */,unsigned long * /* IV_R */,unsigned long *lp,unsigned long *rp)
 	{
+		unsigned long left = htolui(*lp), right = htolui(*rp);
+
 		Blowfish_Decrypt(ctx,left,right);
+
+		*lp = ltohui(left); *rp = ltohui(right);
 	};
 };
 //----------------------------------------------------------------------------
@@ -452,23 +460,26 @@ class opmode_cbc
 {
 public:
 	static const unsigned int blocklen=8;
-	static forceinline void Encrypt(_BLOWFISH_CTX *ctx,unsigned long *IV_L,unsigned long *IV_R,unsigned long *left,unsigned long *right)
+	static forceinline void Encrypt(_BLOWFISH_CTX *ctx,unsigned long *IV_L,unsigned long *IV_R,unsigned long *lp,unsigned long *rp)
 	{
-		*left ^=*IV_L;
-		*right^=*IV_R;
+		unsigned long left = htolui(*lp), right = htolui(*rp);
+
+		left ^=*IV_L; right^=*IV_R;
 		Blowfish_Encrypt(ctx,left,right);
-		*IV_L=*left;
-		*IV_R=*right;
+		*IV_L=left; *IV_R=right;
+
+		*lp = ltohui(left); *rp = ltohui(right);
 	};
-	static forceinline void Decrypt(_BLOWFISH_CTX *ctx,unsigned long *IV_L,unsigned long *IV_R,unsigned long *left,unsigned long *right)
+	static forceinline void Decrypt(_BLOWFISH_CTX *ctx,unsigned long *IV_L,unsigned long *IV_R,unsigned long *lp,unsigned long *rp)
 	{
-		unsigned long tl=*left;
-		unsigned long tr=*right;
+		unsigned long left = htolui(*lp), right = htolui(*rp);
+		unsigned long tl = left, tr = right;
+
 		Blowfish_Decrypt(ctx,left,right);
-		*left ^=*IV_L;
-		*right^=*IV_R;
-		*IV_L=tl;
-		*IV_R=tr;
+		left ^=*IV_L; right^=*IV_R;
+		*IV_L=tl; *IV_R=tr;
+
+		*lp = ltohui(left); *rp = ltohui(right);
 	};
 };
 //----------------------------------------------------------------------------
@@ -476,23 +487,26 @@ class opmode_pcbc
 {
 public:
 	static const unsigned int blocklen=8;
-	static forceinline void Encrypt(_BLOWFISH_CTX *ctx,unsigned long *IV_L,unsigned long *IV_R,unsigned long *left,unsigned long *right)
+	static forceinline void Encrypt(_BLOWFISH_CTX *ctx,unsigned long *IV_L,unsigned long *IV_R,unsigned long *lp,unsigned long *rp)
 	{
-		*left ^=*IV_L;
-		*right^=*IV_R;
+		unsigned long left = htolui(*lp), right = htolui(*rp);
+
+		left ^=*IV_L; right^=*IV_R;
 		Blowfish_Encrypt(ctx,left,right);
-		*IV_L^=*left;
-		*IV_R^=*right;
+		*IV_L=left; *IV_R=right;
+
+		*lp = ltohui(left); *rp = ltohui(right);
 	};
-	static forceinline void Decrypt(_BLOWFISH_CTX *ctx,unsigned long *IV_L,unsigned long *IV_R,unsigned long *left,unsigned long *right)
+	static forceinline void Decrypt(_BLOWFISH_CTX *ctx,unsigned long *IV_L,unsigned long *IV_R,unsigned long *lp,unsigned long *rp)
 	{
-		unsigned long tl=*left;
-		unsigned long tr=*right;
+		unsigned long left = htolui(*lp), right = htolui(*rp);
+		unsigned long tl = left, tr = right;
+
 		Blowfish_Decrypt(ctx,left,right);
-		*left ^=*IV_L;
-		*right^=*IV_R;
-		*IV_L^=tl;
-		*IV_R^=tr;
+		left ^=*IV_L; right^=*IV_R;
+		*IV_L=tl; *IV_R=tr;
+
+		*lp = ltohui(left); *rp = ltohui(right);
 	};
 };
 //----------------------------------------------------------------------------
@@ -526,31 +540,13 @@ static forceinline bool isBlockLen(unsigned int len, unsigned int blocklen)
 {
 	switch(blocklen)
 	{
-	case 1:
-		{
-			return true;
-		};
-	case 2:
-		{
-			return ((len&( 2-1))==0);
-		};
-	case 4:
-		{
-			return ((len&( 4-1))==0);
-		};
-	case 8:
-		{
-			return ((len&( 8-1))==0);
-		};
-	case 16:
-		{
-			return ((len&(16-1))==0);
-		};
-	default:
-		{
-			return ((len%blocklen)==0);
-		};
-	};
+	case  1:	return true;
+	case  2:	return ((len&( 2-1))==0);
+	case  4:	return ((len&( 4-1))==0);
+	case  8:	return ((len&( 8-1))==0);
+	case 16:	return ((len&(16-1))==0);
+	default:	return ((len%blocklen)==0);
+	}
 }
 //----------------------------------------------------------------------------
 template<class opmodefunc> class BlockOpUni
@@ -572,11 +568,11 @@ public:
 		while(cleft<x) {
 			opmodefunc::DoOp(ctx,&IV_L,&IV_R,lleft,lright);
 			cleft+=8;cright+=8;
-		};
+		}
 		if (updateIV) {
 			IV[0]=IV_L;
 			IV[1]=IV_R;
-		};
+		}
 	};
 };
 
@@ -645,7 +641,7 @@ void CBlowfish::Final()
 		m_IV_Enc[0]=m_IV_Enc[1]=0;
 		m_IV_Dec[0]=m_IV_Dec[1]=0;
 		m_bInited=false;
-	};
+	}
 }
 
 void CBlowfish::EncryptECB(void *data, unsigned int len)
@@ -684,44 +680,23 @@ void CBlowfish::DecryptPCBC(void *data, unsigned int len)
 	BlockOp<opmode_pcbc>::Decrypt(&m_ctx,data,len,m_IV_Dec,true);
 }
 
-void CBlowfish::SetIV(_eIV which,unsigned long IV[2])
-{
-	ASSERT(m_bInited);
-	if (which==IV_BOTH||which==IV_ENC) {
-		m_IV_Enc[0]=IV[0];
-		m_IV_Enc[1]=IV[1];
-	};
-	if (which==IV_BOTH||which==IV_DEC) {
-		m_IV_Dec[0]=IV[0];
-		m_IV_Dec[1]=IV[1];
-	};
-}
-
 void CBlowfish::SetIV(_eIV which,unsigned long left,unsigned long right)
 {
 	ASSERT(m_bInited);
+	left = htolui(left); right = htolui(right);
 	if (which==IV_BOTH||which==IV_ENC) {
 		m_IV_Enc[0]=left;
 		m_IV_Enc[1]=right;
-	};
+	}
 	if (which==IV_BOTH||which==IV_DEC) {
 		m_IV_Dec[0]=left;
 		m_IV_Dec[1]=right;
-	};
+	}
 }
 
-void CBlowfish::GetIV(_eIV which,unsigned long IV[2])
+void CBlowfish::SetIV(_eIV which,unsigned long IV[2])
 {
-	ASSERT(m_bInited);
-	ASSERT(which==IV_ENC||which==IV_DEC);
-	if (which==IV_ENC) {
-		IV[0]=m_IV_Enc[0];
-		IV[1]=m_IV_Enc[1];
-	};
-	if (which==IV_DEC) {
-		IV[0]=m_IV_Dec[0];
-		IV[1]=m_IV_Dec[1];
-	};
+	SetIV(which, IV[0], IV[1]);
 }
 
 void CBlowfish::GetIV(_eIV which,unsigned long &left,unsigned long &right)
@@ -729,11 +704,17 @@ void CBlowfish::GetIV(_eIV which,unsigned long &left,unsigned long &right)
 	ASSERT(m_bInited);
 	ASSERT(which==IV_ENC||which==IV_DEC);
 	if (which==IV_ENC) {
-		left =m_IV_Enc[0];
-		right=m_IV_Enc[1];
-	};
+		left =ltohui(m_IV_Enc[0]);
+		right=ltohui(m_IV_Enc[1]);
+	}
 	if (which==IV_DEC) {
-		left =m_IV_Dec[0];
-		right=m_IV_Dec[1];
-	};
+		left =ltohui(m_IV_Dec[0]);
+		right=ltohui(m_IV_Dec[1]);
+	}
 }
+
+void CBlowfish::GetIV(_eIV which, unsigned long IV[2])
+{
+	GetIV(which, IV[0], IV[2]);
+}
+
