@@ -25,7 +25,9 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "xferwnd.hpp"
 
 #include "resources.hpp"
+#include "connection.hpp"
 
+/* May need this code for it's GUI-ness
 void add_to_netq(unsigned long ip, unsigned short port, int rating, int replace)
 {
 	if (rating > 100) rating=100;
@@ -86,6 +88,7 @@ void add_to_netq(unsigned long ip, unsigned short port, int rating, int replace)
 		};
 	};
 }
+*/
 
 void LoadNetQ()
 {
@@ -106,7 +109,13 @@ void LoadNetQ()
 				char *ratingp=p;
 				while (*ratingp && *ratingp != ':') ratingp++;
 				if (*ratingp) *ratingp++=0;
-				add_to_netq(inet_addr(line),(unsigned short)atoi(p),100-atoi(ratingp),1);
+				char *keep=ratingp;
+				while(*keep && *keep != ':') keep++;
+				if (*keep) *keep++=0;
+				
+				C_Connection *cc = AddConnection(line,(unsigned short)atoi(p),100-atoi(ratingp));
+				if (*keep)
+					cc->set_keep((char)atoi(keep));
 			}
 			else break;
 		};
@@ -121,6 +130,9 @@ void LoadNetQ()
 				if (line[strlen(line)-1] == '\n') line[strlen(line)-1]=0;
 				if (line2[strlen(line2)-1] == '\n') line2[strlen(line2)-1]=0;
 				if (strlen(line)>1 && strlen(line2)>1) {
+
+//This needs porting to non-windows
+				#ifdef _WIN32
 					int p=g_lvrecvq.InsertItem(g_lvrecvq.GetCount(),line,0);
 					char *ptr=strstr(line2,"<");
 
@@ -132,33 +144,49 @@ void LoadNetQ()
 
 					g_lvrecvq.SetItemText(p,2,line2);
 					g_files_in_download_queue++;
+				#endif
 				};
 			};
+
+//This needs porting to non-windows
+			#ifdef _WIN32
 			RecvQ_UpdateStatusText();
+			#endif
 		};
 		fclose(fp);
 	};
 }
 
+
+//Need to rewrite to save out of g_netq instead of the damn listview
 void SaveNetQ()
 {
 	char str[1024+8];
 	sprintf(str,"%s.pr1",g_config_prefix);
+
 	FILE *fp=fopen(str,"wb");
 	if (fp) {
 		int x;
-		int n=g_lvnetcons.GetCount();
-		for (x = 0; x < n; x ++) {
-			char line[512];
-			char rating[32];
-			g_lvnetcons.GetText(x,1,line,512);
-			g_lvnetcons.GetText(x,2,rating,32);
-			if (strstr(line,":"))
-				fprintf(fp,"%s:%d\n",line,100-atoi(rating));
+		for (x = 0; x < g_netq.GetSize(); x ++) {
+			char host[MAX_HOST_LENGTH];
+			C_Connection *cc = g_netq.Get(x);
+			cc->get_remote_host(host, sizeof(host));
+			/* nite613 Oops, I just broke the saving of ratings. Oh well,
+			 I think they're broken anyways, remind me to do away with them
+			 later. */
+			fprintf(fp,"%s:%hu:%d:100:%hhu\n",host,cc->get_remote_port(),cc->get_keep());
 		};
 
 		fprintf(fp,"\n");
 
+		/* ***** Oh boy! It looks like the download queue exists solely in a windows
+			dialog too! Joy and bliss, I'm just getting good at queue management
+			anyways. This is a problem for another day. For now unix server will
+			lose their download queues. Shouldn't be a big deal since they don't
+			do much downloading yet anyways :P */
+
+//Needs porting to non-windows
+		#ifdef _WIN32
 		for (x = 0; x < g_lvrecv.GetCount(); x ++) {
 			char name[256];
 			char loc[256];
@@ -181,6 +209,8 @@ void SaveNetQ()
 			g_lvrecvq.GetText(x,1,size,sizeof(size));
 			fprintf(fp,"%s\n%s<%s\n",name,loc,size);
 		};
+		#endif
+		
 		fclose(fp);
 	};
 }

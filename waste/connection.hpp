@@ -26,6 +26,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "rsa/global.hpp"
 #include "rsa/rsaref.hpp"
 #include "sha.hpp"
+#include "time.h"
 
 #define MAX_CONNECTION_SENDSIZE 32768
 #define MAX_CONNECTION_RECVSIZE 32768
@@ -33,6 +34,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #define CONNECTION_PKEYHASHSIZE ((SHA_OUTSIZE+7)&~7) //size of hash of public key to be sent
 #define CONNECTION_PADSKEYSIZE (4096/8) //max RSA session key encrypted size (max keysize in bytes)
 #define CONNECTION_KEYSIZE 56           //size of actual session key, bytes
+
+#define MAX_HOST_LENGTH 256
 
 #include "packetdef.hpp"
 
@@ -82,9 +85,21 @@ public:
 		STATE_CONNECTED, STATE_IDLE, STATE_CLOSING, STATE_CLOSED, STATE_DIENOW
 	};
 
+	enum backoff_ctrl
+	{
+		BACKOFF, NOBACKOFF
+	};
+
 	C_Connection(int s, struct sockaddr_in *loc=NULL);
-	C_Connection(char *hostname, unsigned short port, C_AsyncDNS *dns=NULL);
+	C_Connection(char *hostname, unsigned short port);
 	~C_Connection();
+
+	void activate(backoff_ctrl backoff);
+	void deactivate();
+
+	void set_keep(char keep){ m_keep = keep; }
+	char get_keep(){ return m_keep; }
+	void set_good(){ m_last_success = time(NULL); m_incomplete_attempts = 0; }
 
 	state run(int max_send_bytes, int max_recv_bytes);
 
@@ -106,6 +121,7 @@ public:
 	unsigned long get_interface();
 	unsigned long get_remote() { return m_saddr.sin_addr.s_addr; };
 	unsigned short get_remote_port() { return m_remote_port; };
+	void get_remote_host(char *host, int size) { safe_strncpy(host, m_host, size); };
 
 	int get_total_bytes_recv() { return m_recv_bytes_total; };
 	int was_ever_connected() { return m_ever_connected; };
@@ -136,6 +152,11 @@ protected:
 	int  m_send_pos;
 	int  m_send_len;
 
+	int m_incomplete_attempts;
+	time_t m_last_attempt;
+	time_t m_last_success;
+	char m_keep;
+
 	int m_remote_maxsend;
 	int m_satmode;
 
@@ -145,7 +166,7 @@ protected:
 	int  m_recv_bytes_total;
 
 	struct sockaddr_in m_saddr;
-	char m_host[256];
+	char m_host[MAX_HOST_LENGTH];
 
 	C_AsyncDNS *m_dns;
 

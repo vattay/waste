@@ -75,7 +75,7 @@ C_MessageQueue::~C_MessageQueue()
 		m_newmsg.data->Unlock();
 	};
 	if (m_con) {
-		delete m_con;
+		m_con->deactivate();
 	};
 }
 

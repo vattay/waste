@@ -391,9 +391,11 @@ void DoMainLoop()
 
 		//flush config and netq
 		g_config->Flush();
-		#if _DEFINE_WIN32_CLIENT
-			SaveNetQ();
-		#endif
+
+		// This should now work for all platforms
+		//#if _DEFINE_WIN32_CLIENT
+		SaveNetQ();
+		//#endif
 	};
 	if (time(NULL) > g_last_bcastkeytime && newl) {
 		g_last_bcastkeytime = time(NULL)+KEY_BROADCAST_DELAY; //every KEY_BROADCAST_DELAY seconds
@@ -572,12 +574,25 @@ void main_MsgCallback(T_Message *message, C_MessageQueueList *_this, C_Connectio
 			MYSRANDUPDATE((unsigned char *)&message->message_guid,16);
 			C_MessagePing rep(message->data);
 
-			#if _DEFINE_WIN32_CLIENT
-				unsigned int a=(unsigned int)(cn->get_interface());// Intellisense bug here
-				if (rep.m_port && rep.m_ip && (a != rep.m_ip)) {
-					add_to_netq(rep.m_ip,rep.m_port,90,0);
-				};
-			#endif
+			//This should work on all platforms
+			//#if _DEFINE_WIN32_CLIENT
+			unsigned int a=(unsigned int)(cn->get_interface());// Intellisense bug here
+			if (rep.m_port && rep.m_ip && (a != rep.m_ip)) {
+				struct in_addr in;
+				in.s_addr=rep.m_ip;
+				
+				//Check if this connection is in our global queue
+				char found=0;
+				C_Connection *cc=0;
+				for(int x=0; !found && x < g_netq.GetSize(); x++){
+					cc=g_netq.Get(x);
+					if(cc->get_remote() == rep.m_ip && cc->get_remote_port() == rep.m_port)
+						found=1;
+				}
+				if(!found)
+					AddConnection(inet_ntoa(in),rep.m_port,90);
+			};
+			//#endif
 			if (rep.m_nick[0] && rep.m_nick[0] != '#' && rep.m_nick[0] != '&' &&
 				rep.m_nick[0] != '.')
 			{

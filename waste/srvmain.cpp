@@ -34,6 +34,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "xfers.hpp"
 #include "d_chat.hpp"
 #include "license.hpp"
+#include "netq.hpp"
 
 //T_GUID g_search_id;
 //unsigned int g_search_id_time;
@@ -133,6 +134,7 @@ static void installsighandler()
 }
 
 /* nite613 Adding this from WASTED. Is this windows compatible? */
+/*
 void main_AddNodes(){
   char str[1024+8];
   sprintf(str,"%s.pr1",g_config_prefix);
@@ -165,6 +167,7 @@ void main_AddNodes(){
     fclose(fp);
   }
 }
+*/
 
 int main(int argc, char **argv)
 {
@@ -291,7 +294,8 @@ int main(int argc, char **argv)
 
 		InitializeNetworkparts();
 
-		main_AddNodes();
+		//main_AddNodes();
+		LoadNetQ();
 		
 		// run loop
 
@@ -311,6 +315,8 @@ int main(int argc, char **argv)
 		if (g_newdatabase != g_database) delete g_newdatabase;
 		delete g_database;
 	};
+
+	SaveNetQ();
 
 	int x;
 	for (x = 0; x < g_recvs.GetSize(); x ++) delete g_recvs.Get(x);

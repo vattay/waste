@@ -33,6 +33,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "m_lcaps.hpp"
 #include "srchwnd.hpp"
 
+C_ItemList<C_Connection> g_netq;
 C_ItemList<C_Connection> g_new_net;
 
 #if _DEFINE_WIN32_CLIENT
@@ -40,8 +41,7 @@ C_ItemList<C_Connection> g_new_net;
 	HWND g_netstatus_wnd;
 #endif
 
-#define SYNC_SIZE 16
-static char g_con_str[SYNC_SIZE+1]="MUGWHUMPJISMSYN3";
+char g_con_str[SYNC_SIZE+1]="MUGWHUMPJISMSYN3";
 
 static void ListenToSocket()
 {
@@ -127,7 +127,7 @@ void NetKern_ConnectToHostIfOK(unsigned long ip, unsigned short port)
 	#endif
 
 	if (is_accessable_addr(ip) && allowIP(ip)) {
-		C_Connection *newcon=new C_Connection(text,port,g_dns);
+		C_Connection *newcon=new C_Connection(text,port);
 		newcon->send_bytes(g_con_str,SYNC_SIZE);
 		g_new_net.Add(newcon);
 
@@ -189,6 +189,11 @@ void RebroadcastCaps(C_MessageQueueList *mql) //sends a local message to every h
 
 static void HandleNewOutCons()
 {
+
+	//Turning this all off for now. Will implement the guts of this lower down,
+	// but still need to recreate the GUI code
+	#if 0
+	
 	#if _DEFINE_WIN32_CLIENT
 		static unsigned int next_runitem;
 
@@ -266,6 +271,10 @@ static void HandleNewOutCons()
 			next_runitem=GetTickCount()+NEXTITEM_NEW_OUT_CONNECTION_DELAY;
 		};
 	#endif// _DEFINE_WIN32_CLIENT
+
+	#endif // 0  
+
+	//Process activated connections
 	int x;
 	for (x = 0; x < g_new_net.GetSize(); x ++) {
 		C_Connection *cc=g_new_net.Get(x);
@@ -281,7 +290,7 @@ static void HandleNewOutCons()
 			in.s_addr=cc->get_remote();
 			char *ad=inet_ntoa(in);
 			log_printf(ds_Warning,"Could not connect to host: host %s not in access list!",ad);
-			delete cc;
+			cc->deactivate();
 			g_new_net.Del(x--);
 			#if _DEFINE_WIN32_CLIENT
 				PostMessage(g_netstatus_wnd,WM_USER_TITLEUPDATE,0,0);
@@ -318,7 +327,8 @@ static void HandleNewOutCons()
 						};
 
 						if (irat < 0) irat=0;
-						add_to_netq(cc->get_remote(),port,irat,1);
+						//*****What to do with this?
+						//add_to_netq(cc->get_remote(),port,irat,1);
 					};
 				};
 			#endif
@@ -326,7 +336,7 @@ static void HandleNewOutCons()
 			in.s_addr=cc->get_remote();
 			char *ad=inet_ntoa(in);
 			log_printf(ds_Warning,"Could not connect to host: failed connect to %s!", ad);
-			delete cc;
+			cc->deactivate();
 			g_new_net.Del(x--);
 			#if _DEFINE_WIN32_CLIENT
 				PostMessage(g_netstatus_wnd,WM_USER_TITLEUPDATE,0,0);
@@ -343,7 +353,7 @@ static void HandleNewOutCons()
 					};
 				#endif
 				log_printf(ds_Error,"Cannot pop random crap. Bad shit happened!");
-				delete cc;
+				cc->deactivate();
 				g_new_net.Del(x--);
 				#if _DEFINE_WIN32_CLIENT
 					PostMessage(g_netstatus_wnd,WM_USER_TITLEUPDATE,0,0);
@@ -362,7 +372,7 @@ static void HandleNewOutCons()
 				in.s_addr=cc->get_remote();
 				char *ad=inet_ntoa(in);
 				log_printf(ds_Warning,"Could not connect to host: failed auth by %s (%s)! Wrong network password?",ad,descstr_l);
-				delete cc;
+				cc->deactivate();
 				g_new_net.Del(x--);
 				#if _DEFINE_WIN32_CLIENT
 					PostMessage(g_netstatus_wnd,WM_USER_TITLEUPDATE,0,0);
@@ -371,6 +381,7 @@ static void HandleNewOutCons()
 			else {
 				char descstr_l[16+SHA_OUTSIZE*2+32];
 				char descstr_s[16+SHA_OUTSIZE*2+32];
+				cc->set_good();
 				MakeUserStringFromHash(cc->get_remote_pkey_hash(),descstr_l,descstr_s);
 				struct in_addr in;
 				in.s_addr=cc->get_remote();
@@ -413,7 +424,7 @@ static void HandleNewOutCons()
 								g_lvnetcons.DeleteItem(a);
 							};
 						#endif
-						delete cc;
+						cc->deactivate();
 						g_new_net.Del(x--);
 						allowconnection=false;
 						#if _DEFINE_WIN32_CLIENT
@@ -463,6 +474,20 @@ static void HandleNewOutCons()
 			};
 		};
 	};
+
+	//Process permanent connections
+	for(x=0; x < g_netq.GetSize(); x++){
+		C_Connection *cc = g_netq.Get(x);
+		if(cc->get_keep())
+			cc->activate(C_Connection::BACKOFF);
+	}
+
+	//Process non permanent connections
+	for(x=0; (x < g_netq.GetSize()) && (g_mql->GetNumQueues()+g_new_net.GetSize() <= g_keepup); x++){
+		C_Connection *cc = g_netq.Get(x);
+		if(!cc->get_keep())
+			cc->activate(C_Connection::BACKOFF);
+	}
 }
 
 void NetKern_Run()
@@ -471,12 +496,17 @@ void NetKern_Run()
 	HandleNewOutCons();
 }
 
-void AddConnection(char *str, unsigned short port, int rating)
+C_Connection *AddConnection(char *str, unsigned short port, int rating)
 {
 	C_Connection *newcon;
-	newcon=new C_Connection(str,port,g_dns);
+	newcon=new C_Connection(str,port);
+
+/*
+Code moved to C_Connection::activate
+
 	newcon->send_bytes(g_con_str,SYNC_SIZE);
 	g_new_net.Add(newcon);
+*/
 	#if _DEFINE_WIN32_CLIENT
 		char str2[512];
 		sprintf(str2,"%s:%d",str,(int)(unsigned short)port);
@@ -485,6 +515,7 @@ void AddConnection(char *str, unsigned short port, int rating)
 		sprintf(str2,"%d",rating);
 		g_lvnetcons.SetItemText(0,2,str2);
 	#endif
+	return newcon;
 }
 
 void DoPing(C_MessageQueue *mq)
@@ -813,7 +844,9 @@ void DoPing(C_MessageQueue *mq)
 								port=(unsigned short)(atoi(p)&0xffff);
 							};
 							if (port) {
-								AddConnection(text,port,1);
+								C_Connection *cc=AddConnection(text,port,1);
+								cc->set_keep(1);
+								cc->activate(C_Connection::NOBACKOFF);								
 							};
 						};
 						return 0;

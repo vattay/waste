@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "util.hpp"
 #include "connection.hpp"
 #include "sockets.hpp"
-
+#include "netkern.hpp"
 #include "packetdef.hpp"
 
 #include "rsa/r_random.hpp"
@@ -97,14 +97,8 @@ _bfInit::_stage _bfInit::GetStage()
 //incoming
 C_Connection::C_Connection(int s, struct sockaddr_in *loc)
 {
-	m_iSendRandomPadding1=0;
-	m_iSendRandomPadding2=0;
-	m_iSendRandomPadding3=0;
-	m_iRecvRandomPadding1=0;
-	m_iRecvRandomPadding2=0;
-	m_iRecvRandomPadding3=0;
-	m_InitialPacket2Add=0;
 	do_init();
+	m_incomplete_attempts=0;
 	m_socket=s;
 	SET_SOCK_BLOCK(m_socket,0);
 	m_remote_port=0;
@@ -118,21 +112,16 @@ C_Connection::C_Connection(int s, struct sockaddr_in *loc)
 }
 
 //outgoing
-C_Connection::C_Connection(char *hostname, unsigned short port, C_AsyncDNS *dns)
+C_Connection::C_Connection(char *hostname, unsigned short port)
 {
-	m_iSendRandomPadding1=0;
-	m_iSendRandomPadding2=0;
-	m_iSendRandomPadding3=0;
-	m_iRecvRandomPadding1=0;
-	m_iRecvRandomPadding2=0;
-	m_iRecvRandomPadding3=0;
-	m_InitialPacket2Add=0;
 	do_init();
+	m_incomplete_attempts=0;
+	g_netq.Add(this);
 	m_cansend=true;
 	m_state=STATE_ERROR;
 	m_ever_connected=0;
 	m_has_sent_remoteip=false;
-	m_dns=dns;
+	m_dns=g_dns;
 	m_remote_port=(short)port;
 	m_socket=socket(AF_INET,SOCK_STREAM,0);
 	if (m_socket==-1) {
@@ -147,6 +136,55 @@ C_Connection::C_Connection(char *hostname, unsigned short port, C_AsyncDNS *dns)
 		m_saddr.sin_addr.s_addr=inet_addr(hostname);
 		m_state=STATE_RESOLVING;
 	};
+}
+
+void C_Connection::activate(backoff_ctrl backoff)
+{
+
+	//Simple backoff algo: add one minute delay for each failed attempt
+	if(backoff == BACKOFF && ((m_incomplete_attempts * 60) > (time(NULL) - m_last_attempt))){
+
+		return;
+
+	}
+
+	if(m_last_attempt != 0){
+		//Don't touch active connections
+		if(m_state != STATE_ERROR && m_state < STATE_CLOSING)
+			return;
+
+		//Clean up for a new activation
+		do_init();
+		shutdown(m_socket, SHUT_RDWR);
+		closesocket(m_socket);
+	        m_socket=socket(AF_INET,SOCK_STREAM,0);
+		if (m_socket==-1) {
+			log_printf(ds_Error,"connection: call to socket() in activate() failed: %d.",ERRNO);
+		}
+		else {
+			SET_SOCK_BLOCK(m_socket,0);
+			m_state=STATE_RESOLVING;
+		}	        
+	}
+
+	send_bytes(g_con_str,SYNC_SIZE);
+	g_new_net.Add(this);
+	m_last_attempt = time(NULL);
+	m_incomplete_attempts++;
+
+}
+
+void C_Connection::deactivate()
+{
+
+	this->close(1);
+
+	// Only outgoing connections have m_dns set
+	if(!m_dns){
+		//Incoming connections that are being deactivated can die
+		delete this;  //NOTE: This will only work if this was allocated with a plain old "new"
+		return;
+	}
 }
 
 void C_Connection::init_crypt()
@@ -385,6 +423,13 @@ void C_Connection::init_crypt_decodekey() //got their encrypted session key for 
 void C_Connection::do_init()
 {
 	unsigned x;
+	m_iSendRandomPadding1=0;
+	m_iSendRandomPadding2=0;
+	m_iSendRandomPadding3=0;
+	m_iRecvRandomPadding1=0;
+	m_iRecvRandomPadding2=0;
+	m_iRecvRandomPadding3=0;
+	m_InitialPacket2Add=0;
 	m_satmode=0;
 	m_remote_maxsend=2048;
 	for (x = 0 ; x < NUM_BPS_COUNT; x ++) {
@@ -401,6 +446,9 @@ void C_Connection::do_init()
 	m_send_bytes_total=0;
 	m_recv_bytes_total=0;
 	m_start_time=GetTickCount();
+	m_keep=0;
+	m_last_attempt=0;
+	m_last_success=0;
 	init_crypt();
 }
 
