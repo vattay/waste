@@ -1,0 +1,100 @@
+diff -aur waste.orig/Makefile.posix waste.mod/Makefile.posix
+--- waste.orig/Makefile.posix	2003-03-13 00:27:49.000000000 -0500
++++ waste.mod/Makefile.posix	2003-06-03 14:18:55.000000000 -0400
+@@ -1,15 +1,14 @@
+ OBJS = asyncdns.o config.o connection.o filedb.o listen.o m_chat.o m_file.o m_keydist.o m_ping.o m_search.o m_upload.o mqueue.o mqueuelist.o netkern.o sha.o util.o xfers.o xferwnd.o srchwnd.o srvmain.o blowfish.o m_lcaps.o
+ 
+ 
+-RSAOBJS = md5c.o nn.o prime.o r_random.o rsa.o 
++RSAOBJS = rsa/md5c.o rsa/nn.o rsa/prime.o rsa/r_random.o rsa/rsa.o 
+ 
+ DEBUGFLAG = -s
+-CXXFLAGS = -O2 $(DEBUGFLAG) -pipe -march=pentiumpro
+-CFLAGS = -O2 $(DEBUGFLAG) -pipe -march=pentiumpro
+-
++CXXFLAGS = -O2 $(DEBUGFLAG) -pipe
++CFLAGS = -O2 $(DEBUGFLAG) -pipe
+ 
+ wastesrv: $(OBJS) $(RSAOBJS)
+-	$(CC) $(DEBUGFLAG) -pthread -o wastesrv $(OBJS) $(RSAOBJS)
++	$(CXX) $(DEBUGFLAG) -pthread -o wastesrv $(OBJS) $(RSAOBJS)
+ 
+ md5c.o: rsa/md5c.c
+ nn.o: rsa/nn.c
+@@ -18,4 +17,4 @@
+ rsa.o: rsa/rsa.c
+ 
+ clean:
+-	-rm *.o wastesrv
++	-rm *.o rsa/*.o wastesrv
+diff -aur waste.orig/connection.cpp waste.mod/connection.cpp
+--- waste.orig/connection.cpp	2003-05-26 23:25:22.000000000 -0400
++++ waste.mod/connection.cpp	2003-06-03 13:55:59.000000000 -0400
+@@ -21,7 +21,6 @@
+ #include "util.h"
+ #include "connection.h"
+ #include "sockets.h"
+-
+ extern "C" {
+ #include "rsa/r_random.h"
+ #include "rsa/rsa.h"
+@@ -767,7 +766,7 @@
+   if (m_socket==-1) return 0;
+   struct sockaddr_in sin;
+   memset(&sin,0,sizeof(sin));
+-  int len=16;
+-  if (::getsockname(m_socket,(struct sockaddr *)&sin,(socklen_t *)&len)) return 0;
++  socklen_t len=16;
++  if (::getsockname(m_socket,(struct sockaddr *)&sin,&len)) return 0;
+   return (unsigned long) sin.sin_addr.s_addr;
+ }
+diff -aur waste.orig/listen.cpp waste.mod/listen.cpp
+--- waste.orig/listen.cpp	2003-05-26 23:29:26.000000000 -0400
++++ waste.mod/listen.cpp	2003-06-03 13:55:27.000000000 -0400
+@@ -81,8 +81,8 @@
+     return NULL;
+   }
+ 	struct sockaddr_in saddr;
+-	int length = sizeof(struct sockaddr_in);
+-	int s = accept(m_socket, (struct sockaddr *) &saddr, (socklen_t *)&length);
++	socklen_t length = sizeof(struct sockaddr_in);
++	int s = accept(m_socket, (struct sockaddr *) &saddr, &length);
+   if (s != -1)
+   {
+     return new C_Connection(s,&saddr);
+diff -aur waste.orig/platform.h waste.mod/platform.h
+--- waste.orig/platform.h	2003-05-26 23:36:56.000000000 -0400
++++ waste.mod/platform.h	2003-06-03 14:04:56.000000000 -0400
+@@ -67,6 +67,7 @@
+ #define CharNext(x) (x+1)
+ #define CharPrev(s,x) ((s)<(x)?(x)-1:(s))
+ #define DeleteFile(x) unlink(x)
++#define RemoveDirectory(x) rmdir(x)
+ #define CreateDirectory(x,y) mkdir(x,0755)
+ #define Sleep(x) usleep(( x )*1000)
+ #define stricmp(x,y) strcasecmp(x,y)
+@@ -83,9 +84,9 @@
+ #define MAX_PATH 1024
+ 
+ //macfag
+-#ifndef socklen_t
+-#define socklen_t int
+-#endif
++//#ifndef socklen_t
++//#define socklen_t int
++//#endif
+ 
+ #endif
+ 
+diff -aur waste.orig/srvmain.cpp waste.mod/srvmain.cpp
+--- waste.orig/srvmain.cpp	2003-05-27 21:40:55.000000000 -0400
++++ waste.mod/srvmain.cpp	2003-06-03 14:05:52.000000000 -0400
+@@ -28,7 +28,7 @@
+ */
+ 
+ #include "main.h"
+-#include "md5.h"
++#include "rsa/md5.h"
+ 
+ #include "m_upload.h"
+ #include "m_chat.h"
