@@ -47,6 +47,7 @@ static inline unsigned int   htolui(unsigned int   a) { return a; }
 #include <pthread.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/param.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
@@ -61,14 +62,18 @@ static inline unsigned int   htolui(unsigned int   a) { return a; }
 #include <unistd.h>
 #include <signal.h>
 #include <stdlib.h>
+#include <sysexits.h>
 #include <errno.h>
 #include <string.h>
 #include <ctype.h>
 #include <assert.h>
 
+// Some *nix dependant includes and definitions
 #if __APPLE__
 #include <architecture/byte_order.h>
+#define WASTE_CONFIG_DIR "~/Library/Waste/"
 #else
+#define WASTE_CONFIG_DIR "~/.waste/"
 #include <byteswap.h>
 #endif
 
