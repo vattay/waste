@@ -79,6 +79,8 @@ further messages are verified with a MD5 to detect tampering.
 
 */
 
+#include "stdafx.hpp"
+
 #include "platform.hpp"
 
 #include "main.hpp"

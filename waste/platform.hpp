@@ -40,6 +40,17 @@ static inline unsigned int   htobui(unsigned int   a)
 static inline unsigned short htolus(unsigned short a) { return a; }
 static inline unsigned int   htolui(unsigned int   a) { return a; }
 
+// Mirror image byte swap routines.
+#define ltohus htolus
+#define ltohui htolui
+#define ltohs htols
+#define ltohi htoli
+
+#define btohus htobus
+#define btohui htobui
+#define btohs htobs
+#define btohi htobi
+
 #else // !_WIN32
 
 #define THREAD_SAFE
