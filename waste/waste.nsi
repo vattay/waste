@@ -1,12 +1,23 @@
 ; WASTE Delivery System
 
-; Reserve the cutom welcome page for solid compression
+; NOTE: NSIS 1.x is no longer supported! NSIS 2.x series is now very stable and must be used.
+;       Many features used by this installer are not supported by NSIS 1.x.
+
+; The defines wether to build as Full or Minimal. Full includes the support PDF. Comment this line out to build as minimal.
+!define FULL_BUILD
+
+; Choose wether to support XP style
+!define XP_STYLE_ON
+
+; Reserve the custom welcome page for solid compression
 ReserveFile "setup-welcome.ini"
+ReserveFile "waste.bmp"
 
 ; Define app name variables
 !define APP_NAME_BIG "WASTE"
 !define APP_NAME_VER "WASTE 1.5"
 !define APP_NAME_SMALL "WASTE" ; used for directory name and registry
+;!define APP_VERSION "1.5.0" ; only first 3 (x.x.x), used to compare current installed version to check for newer builds
 
 ; Define the name of the main executable
 !define APP_EXENAME "waste.exe"
@@ -15,7 +26,11 @@ ReserveFile "setup-welcome.ini"
 !define HAVE_UPX "upx.exe"
 
 ; Filename of installer
-OutFile waste-setup.exe
+!ifdef FULL_BUILD
+   OutFile waste-setup-full.exe
+!else
+   OutFile waste-setup-mini.exe
+!endif
 
 ; Installer icon
 Icon "modern-install.ico"
@@ -29,12 +44,20 @@ BrandingText "${APP_NAME_VER}"
 ; Name of bitmap which contains checkmark images
 CheckBitmap "modern.bmp"
 
-; Disable below when using NSIS older than 2.x
-XPStyle on
+; Turn on XP Style
+!ifdef XP_STYLE_ON
+   XPStyle on
+!endif
+
+; Make progress bar more accurate
+InstProgressFlags smooth
+
+; Force use to accept the license via checkbox
+LicenseForceSelection checkbox "I have read and understood the rights granted by the GNU GPL license."
 
 ; Installer information
 VIAddVersionKey ProductName "WASTE/DS"
-VIAddVersionKey FileVersion "v1.5 beta 1"
+VIAddVersionKey FileVersion "v1.5 beta 2"
 VIAddVersionKey FileDescription "WASTE Delivery System for ${APP_NAME_VER}"
 VIAddVersionKey LegalCopyright "(C) 2003 Nullsoft, Inc., (C) 2004 WASTE Development Team"
 VIProductVersion 1.5.0.0
@@ -64,7 +87,7 @@ DirText "Please select a location to install ${APP_NAME_BIG} (or use the default
 SetOverwrite on
 SetDateSave on
 !ifdef HAVE_UPX
-  !packhdr tmp.dat "upx --force --best tmp.dat"
+   !packhdr tmp.dat "upx --force --best tmp.dat"
 !endif
 
 ; Change install directory
@@ -72,15 +95,17 @@ InstallDir $PROGRAMFILES\${APP_NAME_SMALL}
 InstallDirRegKey HKLM SOFTWARE\${APP_NAME_SMALL} ""
 
 !ifndef NOINSTTYPES ; only if not defined
-  InstType "Full"
-  InstType "Minimal"
-  ;InstType /NOCUSTOM
-  ;InstType /COMPONENTSONLYONCUSTOM
+   !ifdef FULL_BUILD
+      InstType "Full"
+   !endif
+   InstType "Minimal"
+   ;InstType /NOCUSTOM
+   ;InstType /COMPONENTSONLYONCUSTOM
 !endif
 
-; SOMETHING IS WRONG HERE!
-; SectionSetFlags is no longer documented
-; This isin't that important anyway. I might fix later, its kind of pointless anyway.
+; NOTE!
+; SectionSetFlags is no longer documented and doesn't seem to work correctly.
+; This is not that important anyway, however, because it now uses Full vs. Minimal install instead.
 ; sH4RD
 
 ;Function .onInit
@@ -98,6 +123,25 @@ InstallDirRegKey HKLM SOFTWARE\${APP_NAME_SMALL} ""
 ;
 ;FunctionEnd
 
+
+
+Function .onInit
+   SetOutPath $TEMP
+   File waste.bmp
+   advsplash::show 850 375 250 -1 $TEMP\waste
+   Pop $0
+   Delete $TEMP\waste.bmp
+; Used in future to compare version of installer to program version already installed
+;   GetDllVersion "$INSTDIR\waste.exe" $R0 $R1
+;   IntOp $R2 $R0 / 0x00010000
+;   IntOp $R3 $R0 & 0x0000FFFF
+;   IntOp $R4 $R1 / 0x00010000
+;   IntOp $R5 $R1 & 0x0000FFFF
+;   StrCpy $0 "$R2.$R3.$R4"
+;   MessageBox MB_OK|MB_ICONSTOP "v.$0"
+FunctionEnd
+
+
 Function welcome
    GetTempFileName $R0
    File /oname=$R0 setup-welcome.ini
@@ -110,113 +154,141 @@ Function welcome
    done:
 FunctionEnd
 
+; Make sure user wants to stop install
+Function .onUserAbort
+   MessageBox MB_YESNO "Are you sure you wish to cancel installation?" IDYES NoCancelAbort
+      Abort ; causes uninstaller to not quit.
+   NoCancelAbort:
+FunctionEnd
+
 ; The following Sections are installed
 
 ; Main application, installs for Full and Minimal, is required
 Section "${APP_NAME_BIG} (required)"
-  SectionIn 1 2 RO
-  SetOutPath $INSTDIR
-  File release\${APP_EXENAME}
-  File release\${APP_EXENAME}.manifest
-  File license.txt
-  CreateDirectory $INSTDIR\Downloads
+   SectionIn 1 2 RO
+   SetOutPath $INSTDIR
+   DetailPrint "Copying main files..."
+   File release\${APP_EXENAME}
+   File release\${APP_EXENAME}.manifest
+   File license.txt
+   CreateDirectory $INSTDIR\Downloads
 SectionEnd
 
 ; Sub Section which contains documentation, expanded by default
 SubSection /e Documentation
-
-; PDF Version of Documentation, installs for Full
-  Section "PDF Version"
-    SectionIn 1
-    SetOutPath $INSTDIR\Docs
-    File Docs\documentation.pdf
-    CreateDirectory $INSTDIR\Docs
-    CreateShortCut "$SMPROGRAMS\${APP_NAME_BIG}\${APP_NAME_SMALL} Documentation (pdf).lnk" \
+   !ifdef FULL_BUILD
+      ; PDF Version of Documentation, installs for Full
+      Section "PDF Version"
+         SectionIn 1
+         SetOutPath $INSTDIR\Docs
+         CreateDirectory $INSTDIR\Docs
+         DetailPrint "Copying PDF Documentation..."
+         File Docs\documentation.pdf
+         SetOutPath $INSTDIR
+         ; NOTE!
+         ; This documentation ALWAYS installs start menu shortcuts no matter what option is chosen. This need to be fixed!
+         ; sH4RD
+         CreateShortCut "$SMPROGRAMS\${APP_NAME_BIG}\${APP_NAME_SMALL} Documentation (pdf).lnk" \
                    "$INSTDIR\Docs\documentation.pdf"
-  SectionEnd
+      SectionEnd
+   !endif
 
-; Link to HTML version of Documentation, installs for Full and Minimal
-  Section "HTML Version (Online)"
-    SectionIn 1 2
-    SetOutPath $INSTDIR\Docs
-    File Docs\documentation.html
-    CreateDirectory $INSTDIR\Docs
-    CreateShortCut "$SMPROGRAMS\${APP_NAME_BIG}\${APP_NAME_SMALL} Documentation (html).lnk" \
+   ; Link to HTML version of Documentation, installs for Full and Minimal
+   Section "HTML Version (Online)"
+      SectionIn 1 2
+      SetOutPath $INSTDIR\Docs
+      CreateDirectory $INSTDIR\Docs
+      DetailPrint "Copying HTML Documentation..."
+      File Docs\documentation.html
+      SetOutPath $INSTDIR
+     ; NOTE!
+     ; This documentation ALWAYS installs start menu shortcuts no matter what option is chosen. This need to be fixed!
+     ; sH4RD
+     CreateShortCut "$SMPROGRAMS\${APP_NAME_BIG}\${APP_NAME_SMALL} Documentation (html).lnk" \
                    "$INSTDIR\Docs\documentation.html"
-  SectionEnd
+   SectionEnd
 
 ; End Sub Section Documentation
 SubSectionEnd
 
 ;SubSection /e Options
 
-; Installs the Start Menu shortcuts, installs for Full and Minimal
-  Section "Start Menu shortcuts"
-    SectionIn 1 2
-    CreateDirectory $SMPROGRAMS\${APP_NAME_BIG}
-    CreateShortCut "$SMPROGRAMS\${APP_NAME_BIG}\Uninstall ${APP_NAME_BIG}.lnk" \
-                   "$INSTDIR\uninst.exe"
-    CreateShortCut "$SMPROGRAMS\${APP_NAME_BIG}\${APP_NAME_BIG}.lnk" \
-                   "$INSTDIR\${APP_EXENAME}"
-    CreateShortCut "$SMPROGRAMS\${APP_NAME_BIG}\${APP_NAME_BIG} License.lnk" \
-                   "$INSTDIR\license.txt"
-    CreateShortCut "$SMPROGRAMS\${APP_NAME_BIG}\${APP_NAME_BIG} Downloads Directory.lnk" \
-                   "$INSTDIR\downloads"
-  SectionEnd
+   ; Installs the Start Menu shortcuts, installs for Full and Minimal
+   Section "Start Menu shortcuts"
+      SectionIn 1 2
+      SetOutPath $INSTDIR
+      DetailPrint "Creating shortcuts..."
+      CreateDirectory $SMPROGRAMS\${APP_NAME_BIG}
+      CreateShortCut "$SMPROGRAMS\${APP_NAME_BIG}\Uninstall ${APP_NAME_BIG}.lnk" \
+                     "$INSTDIR\uninst.exe"
+      CreateShortCut "$SMPROGRAMS\${APP_NAME_BIG}\${APP_NAME_BIG}.lnk" \
+                     "$INSTDIR\${APP_EXENAME}"
+      CreateShortCut "$SMPROGRAMS\${APP_NAME_BIG}\${APP_NAME_BIG} License.lnk" \
+                     "$INSTDIR\license.txt"
+      CreateShortCut "$SMPROGRAMS\${APP_NAME_BIG}\${APP_NAME_BIG} Downloads Directory.lnk" \
+                     "$INSTDIR\downloads" "" "$INSTDIR\${APP_EXENAME}" 10
+   SectionEnd
 
-; Installs a shortcut to launch on startup, installs for Full
-  Section "Launch on startup"
-    SectionIn 1
-    CreateShortCut "$SMSTARTUP\${APP_NAME_BIG}.lnk" \
+   ; Installs a shortcut to launch on startup, installs for Full
+   Section "Launch on startup"
+      SectionIn 1
+      DetailPrint "Setting launch on startup..."
+      CreateShortCut "$SMSTARTUP\${APP_NAME_BIG}.lnk" \
                    "$INSTDIR\${APP_EXENAME}"
-  SectionEnd
+   SectionEnd
 
 ;SubSectionEnd
 
 ; This runs after the section installation
 Section -post
 
-  WriteRegStr HKLM SOFTWARE\${APP_NAME_SMALL} "" $INSTDIR
-  WriteRegStr HKCR waste "" "URL: WASTE Command Protocol"
-  WriteRegStr HKCR waste "URL Protocol" ""
-  WriteRegStr HKCR .wastestate "" "WASTESTATE"
-  WriteRegStr HKCR WASTESTATE "" "WASTE transfer information file"
-  WriteRegStr HKCR WASTESTATE\DefaultIcon "" "$INSTDIR\WASTE.exe,1"
-  WriteRegStr HKCR waste\shell\open\command "" '"$INSTDIR\waste.exe" "%1"'
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SMALL}" \
-                   "DisplayName" "${APP_NAME_BIG}"
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SMALL}" \
-                   "UninstallString" '"$INSTDIR\uninst.exe"'
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SMALL}" \
-                   "HelpLink" "http://sourceforge.net/forum/forum.php?forum_id=281190"
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SMALL}" \
-                   "URLInfoAbout" "http://waste.sf.net"
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SMALL}" \
-                   "NoModify" 1
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SMALL}" \
-                   "NoRepair" 1
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SMALL}" \
-                   "Publisher" "WASTE Development Team"
+   DetailPrint "Adding registry keys..."
+   WriteRegStr HKLM SOFTWARE\${APP_NAME_SMALL} "" $INSTDIR
+   WriteRegStr HKCR waste "" "URL: WASTE Command Protocol"
+   WriteRegStr HKCR waste "URL Protocol" ""
+   WriteRegStr HKCR .wastestate "" "WASTESTATE"
+   WriteRegStr HKCR WASTESTATE "" "WASTE transfer information file"
+   WriteRegStr HKCR WASTESTATE\DefaultIcon "" "$INSTDIR\WASTE.exe,1"
+   WriteRegStr HKCR waste\shell\open\command "" '"$INSTDIR\waste.exe" "%1"'
+   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SMALL}" \
+                    "DisplayName" "${APP_NAME_BIG}"
+   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SMALL}" \
+                    "UninstallString" '"$INSTDIR\uninst.exe"'
+   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SMALL}" \
+                    "HelpLink" "http://sourceforge.net/forum/forum.php?forum_id=281190"
+   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SMALL}" \
+                    "URLInfoAbout" "http://waste.sf.net"
+   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SMALL}" \
+                    "NoModify" 1
+   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SMALL}" \
+                    "NoRepair" 1
+   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SMALL}" \
+                    "Publisher" "WASTE Development Team"
 
 
   ; since the installer is now created last (in 1.2+), this makes sure 
   ; that any old installer that is readonly is overwritten.
-  Delete $INSTDIR\uninst.exe 
-  WriteUninstaller $INSTDIR\uninst.exe
+   Delete $INSTDIR\uninst.exe 
+   WriteUninstaller $INSTDIR\uninst.exe
 SectionEnd
 
 ; If install is sucessful, and user profile has not been created, this executes WASTE to complete setup.
 ; Otherwise this prompts to run WASTE or not.
 Function .onInstSuccess
+  DetailPrint "Checking for previous ${APP_NAME_BIG} installs..."
   IfFileExists "$INSTDIR\default.pr0" 0 RunIt
   IfFileExists "$INSTDIR\default.pr1" 0 RunIt
   IfFileExists "$INSTDIR\default.pr2" 0 RunIt
   IfFileExists "$INSTDIR\default.pr3" 0 RunIt
-  IfFileExists "$INSTDIR\default.pr4" DontRunIt RunIt
+  IfFileExists "$INSTDIR\default.pr4" DontRunIt RunItDetail
+  RunItDetail:
+  DetailPrint "New install detected. Enjoy your new ${APP_NAME_BIG} install! :D"
   RunIt:
+  DetailPrint "Starting ${APP_NAME_BIG}..."
   Exec '"$INSTDIR\${APP_EXENAME}"'
   Goto Exit
   DontRunIt:
+  DetailPrint "${APP_NAME_BIG} has been previously installed. Enjoy the upgrade! :D"
   MessageBox MB_YESNO|MB_ICONQUESTION "${APP_NAME_VER} installed sucessfully, would you like to start ${APP_NAME_BIG}?" IDYES RunIt
   Exit:
 FunctionEnd
@@ -226,6 +298,8 @@ UninstallText "This will uninstall ${APP_NAME_BIG} from your system:"
 
 ; This is the script for uninstallation
 Section Uninstall
+
+  DetailPrint "Uninstalling ${APP_NAME_BIG}..."
 
 ; Remove main exe, if it fails to remove prompt
 TryAgain:
@@ -259,6 +333,7 @@ DeletedEXE:
     MessageBox MB_YESNO|MB_ICONQUESTION "Remove any files you have downloaded (in $INSTDIR\downloads)?" IDNO NoDownloads
     Delete $INSTDIR\Downloads\*.*
     RMDir $INSTDIR\Downloads
+    DetailPrint "WARNING: Downloads removed by user!"
 
 NoDownloads:
 
@@ -268,8 +343,9 @@ NoDownloads:
   MessageBox MB_YESNO|MB_ICONQUESTION "Remove network profiles from your ${APP_NAME_BIG} directory?" IDNO AllDone
     Delete $INSTDIR\*.pr?
     Delete $INSTDIR\*.ini
+    DetailPrint "WARNING: Network profiles removed by user!"
   AllDone:
     RMDir $INSTDIR
+    DetailPrint "Thanks for using ${APP_NAME_BIG}!"
 SectionEnd
-
 !endif
