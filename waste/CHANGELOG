@@ -1,0 +1,11 @@
+Changes since 1.5b2:
+
+-New network connection handling (untied from MSWindows)
+-New networking algorithms for connection retries, backoff, 
+ and # of connections to keep up
+-Added intelligence for dynamic IP robustness
+-Endian changes to encryption code for MacOSX port
+-Added wastesrv_admin tool for creating config files in unix
+-Various compiler warnings fixed
+-Increased FILE_CHUNKSIZE from 4k to 24k, doubled my LAN speeds
+
