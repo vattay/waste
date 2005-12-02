@@ -696,14 +696,17 @@ int C_FileDB::DoScan(int maxtime, C_FileDB *oldDB)
 										char buf[4096];
 										sprintf(buf,"%s/%s",s.cur_path,d->d_name);
 										struct stat s;
-									FoundLink:
+									// Commented out as this causes an endless loop, may break things.
+									// - sh4rd
+									// FoundLink:
 										stat(buf,&s);
 										if (s.st_mode & S_IFDIR) t=DT_DIR;
 										if (s.st_mode & S_IFLNK){
 											log_printf(ds_Informational,"Found symbolic link: %s\n", buf);
 											readlink(buf, buf, sizeof(buf));
 											log_printf(ds_Informational,"Resolved to: %s", buf);
-											goto FoundLink;
+											// See above
+											// goto FoundLink;
 										}
 										fsize=s.st_size;
 									};

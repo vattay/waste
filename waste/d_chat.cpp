@@ -551,12 +551,12 @@ bool chat_handle_whois(C_MessageChat &chat)
 		int x=CHATEDIT_HISTSIZE;
 		while (x-- && cli->chatedit_hist[x]);
 		if (x >= 0 && strcmp(buf,cli->chatedit_hist[x])) {
-			if (x == CHATEDIT_HISTSIZE-1) {
+			if (x == CHATEDIT_HISTSIZE-1)   {
 				free(cli->chatedit_hist[0]);
-				memcpy(cli->chatedit_hist,cli->chatedit_hist+1,CHATEDIT_HISTSIZE-1);
-			};
-			cli->chatedit_hist[x]=strdup(buf);
-		};
+				memmove(cli->chatedit_hist,cli->chatedit_hist+1,CHATEDIT_HISTSIZE-1);
+			}
+		cli->chatedit_hist[x]=strdup(buf);
+		}
 	}
 
 	static WNDPROC edit_oldWndProc;

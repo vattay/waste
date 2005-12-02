@@ -45,7 +45,7 @@ static void chat_AutoReply(C_MessageChat &chat)
 {
 	T_Message msg;
 	C_MessageChat req;
-	req.set_chatstring("[autoreply] I am but a dumb server");
+	req.set_chatstring("[Auto Reply] This is a WASTE server - http://waste.sf.net");
 	req.set_dest(chat.get_src());
 	req.set_src(g_regnick);
 	msg.data=req.Make();
@@ -215,6 +215,19 @@ int main(int argc, char **argv)
 				else
 					break;
 			}
+			else if (!strcmp(argv[i],"-P")) {
+				if (++i < argc) {
+					pid = argv[i];
+					FILE *pidfile = fopen(pid,"w");
+					if (pidfile != NULL) {
+						fprintf(pidfile, "%i\n", (int)getpid() );
+						fclose(pidfile);
+					}
+					dohelp = false;
+				}
+				else
+					break;
+			}
 			else
 				break;
 		}
@@ -230,10 +243,11 @@ int main(int argc, char **argv)
 				"%s\n"
 				"%s\n"
 				"\n"
-				"Usage: wastesrv [-p <profile>] [-L] [-i] | [-d <logfile>]\n"
+				"Usage: wastesrv [-p <profile>] [-L] [-i] [-P <PID file>| [-d <logfile>]\n"
 				"\t -L print license\n"
 				"\t -p profile to use (default)\n"
 				"\t -i interactive mode\n"
+				"\t -P PID file to write PID in\n"
 				"\t -d daemon mode (on *nix this will put wastesrv in the background)\n"
 				"\n"
 				"\twastesrv.ini must to be present on Windows\n"

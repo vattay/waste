@@ -674,6 +674,7 @@ int doLoadKey(const unsigned char passhash[SHA_OUTSIZE], const char *keyfn, R_RS
 	return 0;
 }
 
+#define NUMBER_OF_RETRIES 10
 #if _DEFINE_WIN32_CLIENT
 	void reloadKey(int type, char *passstr, HWND hwndParent)
 #else
@@ -683,7 +684,7 @@ int doLoadKey(const unsigned char passhash[SHA_OUTSIZE], const char *keyfn, R_RS
 	void reloadKey(int type, char *passstr)
 #endif
 {
-	int retry=10;
+	int retry=NUMBER_OF_RETRIES;
 	unsigned char passhash[SHA_OUTSIZE];
 	#if !_DEFINE_WIN32_CLIENT
 		char tmp_passbuf[256];
@@ -693,11 +694,9 @@ int doLoadKey(const unsigned char passhash[SHA_OUTSIZE], const char *keyfn, R_RS
 	sprintf(keyfn,"%s.pr4",g_config_prefix);
 
 	#if _DEFINE_WIN32_CLIENT
-		if (!passstr) {
+		if (!passstr || retry == NUMBER_OF_RETRIES) {	// ask for password the first time through
 	giveitanothergo:
 			if (DialogBox(g_hInst,MAKEINTRESOURCE(IDD_PASSWD),hwndParent,PassWordProc)) {
-				g_key.bits=0;
-				memset(g_pubkeyhash,0,sizeof(g_pubkeyhash));
 				return;
 			}
 			passstr=tmp_passbuf;

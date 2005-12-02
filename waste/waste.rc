@@ -1,4 +1,4 @@
-// Microsoft Visual C++ generated resource script.
+//Microsoft Developer Studio generated resource script.
 //
 #include "resource.hpp"
 
@@ -25,9 +25,9 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // Dialog
 //
 
-IDD_NET DIALOG  0, 0, 246, 119
-STYLE DS_SETFONT | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_CLIPSIBLINGS | 
-    WS_CLIPCHILDREN | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+IDD_NET DIALOG DISCARDABLE  0, 0, 246, 119
+STYLE WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
+    WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 CLASS "WASTEnetwnd"
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -46,8 +46,8 @@ BEGIN
     LTEXT           "connections",IDC_TK2,117,24,40,8
 END
 
-IDD_RECV DIALOG  0, 0, 271, 118
-STYLE DS_SETFONT | DS_CONTROL | WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN
+IDD_RECV DIALOG DISCARDABLE  0, 0, 271, 118
+STYLE DS_CONTROL | WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN
 FONT 8, "MS Sans Serif"
 BEGIN
     CONTROL         "List1",IDC_RECVLIST,"SysListView32",LVS_REPORT | 
@@ -68,8 +68,8 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,82,89,83,10
 END
 
-IDD_SEND DIALOG  0, 0, 247, 142
-STYLE DS_SETFONT | DS_CONTROL | WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN
+IDD_SEND DIALOG DISCARDABLE  0, 0, 247, 142
+STYLE DS_CONTROL | WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN
 FONT 8, "MS Sans Serif"
 BEGIN
     CONTROL         "List1",IDC_SENDLIST,"SysListView32",LVS_REPORT | 
@@ -84,16 +84,16 @@ BEGIN
     PUSHBUTTON      "Abort selected",IDC_ABORTSEL,0,126,19,16,BS_ICON
 END
 
-IDD_WIZ1 DIALOGEX 0, 0, 210, 140
-STYLE DS_SETFONT | DS_CONTROL | WS_CHILD
-FONT 8, "MS Sans Serif", 0, 0, 0x0
+IDD_WIZ1 DIALOG DISCARDABLE  0, 0, 210, 140
+STYLE DS_CONTROL | WS_CHILD
+FONT 8, "MS Sans Serif"
 BEGIN
     EDITTEXT        IDC_EDIT_NICK,43,9,62,12,ES_AUTOHSCROLL
     EDITTEXT        IDC_EDIT_USERNAME,43,23,160,12,ES_AUTOHSCROLL
     COMBOBOX        IDC_CONSPEED,6,51,174,105,CBS_DROPDOWNLIST | WS_VSCROLL | 
                     WS_TABSTOP
-    LTEXT           "Note: selecting ISDN or Modem will keep your node from routing and rebroadcasting traffic.",
-                    IDC_STATIC,7,66,174,17
+    LTEXT           "Note: selecting ISDN or Modem will not allow you to serve as a ""hub"" on the network.",
+                    IDC_STATIC,7,66,198,17
     EDITTEXT        IDC_EDIT_NETPASSWORD,5,101,199,12,ES_AUTOHSCROLL
     LTEXT           "If your network uses a network name/ID, enter it here. You will only be able to connect to nodes with the same name/ID.",
                     IDC_STATIC,6,116,197,17
@@ -104,8 +104,8 @@ BEGIN
     GROUPBOX        "Network name/ID (optional)",IDC_STATIC,0,87,209,52
 END
 
-IDD_WIZ2 DIALOG  0, 0, 210, 140
-STYLE DS_SETFONT | DS_CONTROL | WS_CHILD
+IDD_WIZ2 DIALOG DISCARDABLE  0, 0, 210, 140
+STYLE DS_CONTROL | WS_CHILD
 FONT 8, "MS Sans Serif"
 BEGIN
     PUSHBUTTON      "",IDC_SAVEPATH,6,32,200,14,BS_LEFT
@@ -120,8 +120,8 @@ BEGIN
 END
 
 IDD_WIZ4 DIALOGEX 0, 0, 210, 140
-STYLE DS_SETFONT | DS_CONTROL | WS_CHILD
-FONT 8, "MS Sans Serif", 0, 0, 0x0
+STYLE DS_CONTROL | WS_CHILD
+FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     PUSHBUTTON      "Run key generator...",IDC_BUTTON_RUN_KEYGEN,6,30,94,14
     PUSHBUTTON      "Import key from file...",IDC_BUTTON_IMPORT_KEY,103,30,
@@ -141,8 +141,8 @@ BEGIN
                     NOT WS_BORDER
 END
 
-IDD_SETUPWIZ DIALOG  0, 0, 258, 175
-STYLE DS_SETFONT | DS_CENTER | WS_CAPTION | WS_SYSMENU
+IDD_SETUPWIZ DIALOG DISCARDABLE  0, 0, 258, 175
+STYLE DS_CENTER | WS_CAPTION | WS_SYSMENU
 FONT 8, "MS Sans Serif"
 BEGIN
     DEFPUSHBUTTON   "Next>>",IDOK,201,157,50,14
@@ -154,30 +154,27 @@ BEGIN
 END
 
 IDD_CHATCHAN DIALOGEX 0, 0, 346, 225
-STYLE DS_SETFONT | DS_CENTER | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | 
-    WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_CAPTION | WS_SYSMENU | 
-    WS_THICKFRAME
+STYLE DS_CENTER | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_CLIPSIBLINGS | 
+    WS_CLIPCHILDREN | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 EXSTYLE WS_EX_ACCEPTFILES
 CLASS "WASTEchatwnd"
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "Send",IDC_CHAT,312,207,30,14,NOT WS_VISIBLE
-    CONTROL         "",IDC_CHATEDIT,"RichEdit20A",ES_MULTILINE | 
-                    ES_AUTOVSCROLL | ES_AUTOHSCROLL | WS_BORDER | WS_TABSTOP,
-                    3,206,340,15
+    CONTROL         "",IDC_CHATEDIT,"RichEdit20A",WS_BORDER | WS_TABSTOP | 
+                    0xc4,3,206,340,15
     CONTROL         "Tree1",IDC_TREE_CHATROOM,"SysTreeView32",
-                    TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS | WS_BORDER | 
-                    0x4000,284,4,58,199
-    CONTROL         "",IDC_CHATTEXT,"RichEdit20A",ES_MULTILINE | ES_READONLY | 
-                    ES_NUMBER | WS_BORDER | WS_VSCROLL | WS_TABSTOP,3,4,278,
-                    199
+                    TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS | 
+                    TVS_NONEVENHEIGHT | WS_BORDER,284,4,58,199
+    CONTROL         "",IDC_CHATTEXT,"RichEdit20A",WS_BORDER | WS_VSCROLL | 
+                    WS_TABSTOP | 0x2804,3,4,278,199
     CONTROL         "",IDC_NAMELISTRESIZER,"Static",SS_ETCHEDVERT | NOT 
                     WS_VISIBLE,282,4,1,201
 END
 
 IDD_PASSWD DIALOGEX 0, 0, 283, 55
-STYLE DS_SETFONT | DS_CENTER | WS_CAPTION | WS_SYSMENU
-FONT 8, "MS Sans Serif", 0, 0, 0x0
+STYLE DS_CENTER | WS_CAPTION | WS_SYSMENU
+FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     EDITTEXT        IDC_EDIT_PASSWORD,7,17,137,14,ES_PASSWORD | 
                     ES_AUTOHSCROLL
@@ -190,25 +187,23 @@ BEGIN
 END
 
 IDD_CHATPRIV DIALOGEX 0, 0, 266, 230
-STYLE DS_SETFONT | DS_CENTER | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | 
-    WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_CAPTION | WS_SYSMENU | 
-    WS_THICKFRAME
+STYLE DS_CENTER | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_CLIPSIBLINGS | 
+    WS_CLIPCHILDREN | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 EXSTYLE WS_EX_ACCEPTFILES
 CLASS "WASTEchatwnd"
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
-    CONTROL         "",IDC_CHATEDIT,"RichEdit20A",ES_MULTILINE | 
-                    ES_AUTOVSCROLL | ES_AUTOHSCROLL | WS_BORDER | WS_TABSTOP,
-                    2,206,261,15
-    CONTROL         "",IDC_CHATTEXT,"RichEdit20A",ES_MULTILINE | ES_READONLY | 
-                    WS_BORDER | WS_VSCROLL | WS_TABSTOP,2,2,261,202
+    CONTROL         "",IDC_CHATEDIT,"RichEdit20A",WS_BORDER | WS_TABSTOP | 
+                    0xc4,2,206,261,15
+    CONTROL         "",IDC_CHATTEXT,"RichEdit20A",WS_BORDER | WS_VSCROLL | 
+                    WS_TABSTOP | 0x804,2,2,261,202
     DEFPUSHBUTTON   "Send",IDC_CHAT,234,207,30,14,NOT WS_VISIBLE
     LTEXT           "",IDC_STATUS,2,221,261,8,WS_DISABLED
 END
 
 IDD_MAIN DIALOGEX 0, 0, 90, 198
-STYLE DS_SETFONT | WS_MINIMIZEBOX | WS_POPUP | WS_CLIPSIBLINGS | 
-    WS_CLIPCHILDREN | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+STYLE WS_MINIMIZEBOX | WS_POPUP | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
+    WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 EXSTYLE WS_EX_ACCEPTFILES
 MENU IDR_MENU1
 CLASS "WASTEmainwnd"
@@ -217,12 +212,12 @@ BEGIN
     PUSHBUTTON      "",IDC_NETSETTINGS,2,2,17,14,BS_ICON
     LTEXT           "Users:",IDC_USERSLABEL,2,18,86,8,WS_DISABLED
     CONTROL         "Tree1",IDC_USERS,"SysTreeView32",TVS_DISABLEDRAGDROP | 
-                    TVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP | 0x4000,2,27,
-                    86,95
+                    TVS_SHOWSELALWAYS | TVS_NONEVENHEIGHT | WS_BORDER | 
+                    WS_TABSTOP,2,27,86,95
     LTEXT           "Chats:",IDC_CHATROOMSLABEL,2,127,86,8,WS_DISABLED
     CONTROL         "Tree1",IDC_CHATROOMS,"SysTreeView32",
-                    TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS | WS_BORDER | 
-                    WS_TABSTOP | 0x4000,2,137,86,59
+                    TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS | 
+                    TVS_NONEVENHEIGHT | WS_BORDER | WS_TABSTOP,2,137,86,59
     PUSHBUTTON      "Chat",IDC_CREATECHATROOM,71,2,17,14,BS_ICON
     CONTROL         "",IDC_DIVIDER,"Static",SS_ETCHEDHORZ | SS_NOTIFY,2,125,
                     86,1
@@ -231,10 +226,9 @@ BEGIN
 END
 
 IDD_CHATROOMCREATE DIALOGEX 0, 0, 186, 90
-STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | 
-    WS_SYSMENU
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CLASS "WASTEchatwnd"
-FONT 8, "MS Sans Serif", 0, 0, 0x0
+FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     EDITTEXT        IDC_EDIT_CHATROOMNAME,7,16,172,12,ES_AUTOHSCROLL
     DEFPUSHBUTTON   "Join",IDOK,7,69,50,14
@@ -247,10 +241,10 @@ BEGIN
 END
 
 IDD_SEARCH DIALOGEX 0, 0, 280, 206
-STYLE DS_SETFONT | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_CLIPSIBLINGS | 
-    WS_CLIPCHILDREN | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+STYLE WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
+    WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 CLASS "WASTEsearchwnd"
-FONT 8, "MS Sans Serif", 0, 0, 0x0
+FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     COMBOBOX        IDC_SEARCHTEXT,101,6,154,194,CBS_DROPDOWN | 
                     CBS_AUTOHSCROLL | WS_VSCROLL | WS_TABSTOP
@@ -272,17 +266,17 @@ BEGIN
     EDITTEXT        IDC_EDIT_FILTER,45,192,59,13,ES_AUTOHSCROLL
 END
 
-IDD_XFERS DIALOG  0, 0, 296, 182
-STYLE DS_SETFONT | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_CLIPSIBLINGS | 
-    WS_CLIPCHILDREN | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+IDD_XFERS DIALOG DISCARDABLE  0, 0, 296, 182
+STYLE WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
+    WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 CLASS "WASTExferwnd"
 FONT 8, "MS Sans Serif"
 BEGIN
     CONTROL         "Tab1",IDC_TAB1,"SysTabControl32",0x0,0,0,296,182
 END
 
-IDD_RECVQ DIALOG  0, 0, 271, 107
-STYLE DS_SETFONT | DS_CONTROL | WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN
+IDD_RECVQ DIALOG DISCARDABLE  0, 0, 271, 107
+STYLE DS_CONTROL | WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN
 FONT 8, "MS Sans Serif"
 BEGIN
     CONTROL         "List1",IDC_RECVLISTQ,"SysListView32",LVS_REPORT | 
@@ -302,10 +296,10 @@ BEGIN
 END
 
 IDD_PREFS DIALOGEX 0, 0, 341, 234
-STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CLIPSIBLINGS | 
-    WS_CLIPCHILDREN | WS_CAPTION | WS_SYSMENU
+STYLE DS_MODALFRAME | WS_POPUP | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
+    WS_CAPTION | WS_SYSMENU
 CLASS "WASTEwnd"
-FONT 8, "MS Sans Serif", 0, 0, 0x0
+FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     CONTROL         "Tree1",IDC_TREE_PREFERENCES,"SysTreeView32",
                     TVS_HASLINES | TVS_LINESATROOT | TVS_DISABLEDRAGDROP | 
@@ -317,7 +311,7 @@ BEGIN
 END
 
 IDD_PREF_NETWORK DIALOGEX 0, 0, 218, 218
-STYLE DS_SETFONT | WS_CHILD
+STYLE WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
@@ -352,7 +346,7 @@ BEGIN
 END
 
 IDD_PREF_NETWORK_C DIALOGEX 0, 0, 218, 218
-STYLE DS_SETFONT | WS_CHILD
+STYLE WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
@@ -370,7 +364,7 @@ BEGIN
 END
 
 IDD_PREF_SECURITY DIALOGEX 0, 0, 218, 218
-STYLE DS_SETFONT | WS_CHILD
+STYLE WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
@@ -397,7 +391,7 @@ BEGIN
 END
 
 IDD_PREF_FILES DIALOGEX 0, 0, 218, 218
-STYLE DS_SETFONT | WS_CHILD
+STYLE WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
@@ -439,7 +433,7 @@ BEGIN
 END
 
 IDD_PREF_CHAT_A DIALOGEX 0, 0, 218, 218
-STYLE DS_SETFONT | WS_CHILD
+STYLE WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
@@ -477,7 +471,7 @@ BEGIN
 END
 
 IDD_PREF_NETWORK_A DIALOGEX 0, 0, 218, 218
-STYLE DS_SETFONT | WS_CHILD
+STYLE WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
@@ -497,7 +491,7 @@ BEGIN
 END
 
 IDD_PREF_NETWORK_B DIALOGEX 0, 0, 218, 218
-STYLE DS_SETFONT | WS_CHILD
+STYLE WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
@@ -526,7 +520,7 @@ BEGIN
 END
 
 IDD_PREF_DISPLAY DIALOGEX 0, 0, 218, 218
-STYLE DS_SETFONT | WS_CHILD
+STYLE WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
@@ -573,9 +567,9 @@ BEGIN
 END
 
 IDD_ACEDIT DIALOGEX 0, 0, 194, 94
-STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Access Control List Item"
-FONT 8, "MS Sans Serif", 0, 0, 0x0
+FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,7,73,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,59,73,50,14
@@ -591,7 +585,7 @@ BEGIN
 END
 
 IDD_PREF_FILES_SEND DIALOGEX 0, 0, 218, 218
-STYLE DS_SETFONT | WS_CHILD
+STYLE WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
@@ -639,7 +633,7 @@ BEGIN
 END
 
 IDD_PREF_FILES_RECV DIALOGEX 0, 0, 218, 218
-STYLE DS_SETFONT | WS_CHILD
+STYLE WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
@@ -679,10 +673,9 @@ BEGIN
 END
 
 IDD_PROFILES DIALOGEX 0, 0, 160, 127
-STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | 
-    WS_SYSMENU
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CLASS "WASTEwnd"
-FONT 8, "MS Sans Serif", 0, 0, 0x0
+FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     LISTBOX         IDC_LIST_PROFILES,48,16,105,75,LBS_SORT | 
                     LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
@@ -699,9 +692,8 @@ BEGIN
 END
 
 IDD_PROFILE_MOD DIALOGEX 0, 0, 194, 61
-STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | 
-    WS_SYSMENU
-FONT 8, "MS Sans Serif", 0, 0, 0x0
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     EDITTEXT        IDC_EDIT_DESTNAME,49,22,138,12,ES_AUTOHSCROLL
     DEFPUSHBUTTON   "OK",IDOK,7,40,50,14
@@ -713,7 +705,7 @@ BEGIN
 END
 
 IDD_PREF_PROFILES DIALOGEX 0, 0, 218, 218
-STYLE DS_SETFONT | WS_CHILD
+STYLE WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
@@ -747,7 +739,7 @@ BEGIN
 END
 
 IDD_PREF_THROTTLE DIALOGEX 0, 0, 218, 218
-STYLE DS_SETFONT | WS_CHILD
+STYLE WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
@@ -784,7 +776,7 @@ BEGIN
 END
 
 IDD_FILESUBDLG DIALOGEX 0, 0, 275, 30
-STYLE DS_SETFONT | DS_3DLOOK | DS_CONTROL | WS_CHILD | WS_CLIPSIBLINGS
+STYLE DS_3DLOOK | DS_CONTROL | WS_CHILD | WS_CLIPSIBLINGS
 EXSTYLE WS_EX_NOPARENTNOTIFY
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
@@ -793,7 +785,7 @@ BEGIN
 END
 
 IDD_PREF_KEYDIST DIALOGEX 0, 0, 218, 218
-STYLE DS_SETFONT | WS_CHILD
+STYLE WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
@@ -808,7 +800,7 @@ BEGIN
 END
 
 IDD_KEYIMPORTDLG DIALOGEX 0, 0, 220, 74
-STYLE DS_SETFONT | DS_3DLOOK | DS_CONTROL | WS_CHILD | WS_CLIPSIBLINGS
+STYLE DS_3DLOOK | DS_CONTROL | WS_CHILD | WS_CLIPSIBLINGS
 EXSTYLE WS_EX_NOPARENTNOTIFY
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
@@ -820,7 +812,7 @@ BEGIN
 END
 
 IDD_PREF_KEYDIST_PENDING DIALOGEX 0, 0, 218, 218
-STYLE DS_SETFONT | WS_CHILD
+STYLE WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
@@ -842,9 +834,8 @@ BEGIN
 END
 
 IDD_KEYGEN DIALOGEX 0, 0, 274, 143
-STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | 
-    WS_SYSMENU
-FONT 8, "MS Sans Serif", 0, 0, 0x0
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     EDITTEXT        IDC_EDIT_PASSWORD,77,52,190,12,ES_PASSWORD | 
                     ES_AUTOHSCROLL
@@ -860,24 +851,24 @@ BEGIN
                     IDC_LABEL_LINE1,7,6,260,8
     LTEXT           "the mouse around randomly within this window.",
                     IDC_LABEL_LINE2,7,16,260,8,NOT WS_VISIBLE
-    CONTROL         "Progress1",IDC_PROGRESS_KEYGEN,"msctls_progress32",NOT 
-                    WS_VISIBLE | WS_BORDER | 0x1,7,28,260,11
+    CONTROL         "Progress1",IDC_PROGRESS_KEYGEN,"msctls_progress32",
+                    PBS_SMOOTH | NOT WS_VISIBLE | WS_BORDER,7,28,260,11
     RTEXT           "Key size:",IDC_LABEL_KEYSIZE,44,96,29,8
 END
 
 IDD_RNGINIT DIALOGEX 0, 0, 307, 170
-STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION
 CLASS "WASTEwnd"
-FONT 8, "MS Sans Serif", 0, 0, 0x0
+FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     LTEXT           "Initializing random number generator, please move mouse around in this window until the bar below is completely full:",
                     IDC_STATIC,7,6,293,17
-    CONTROL         "Progress1",IDC_PROGRESS_RNG,"msctls_progress32",NOT 
-                    WS_VISIBLE | WS_BORDER | 0x1,7,24,293,14
+    CONTROL         "Progress1",IDC_PROGRESS_RNG,"msctls_progress32",
+                    PBS_SMOOTH | NOT WS_VISIBLE | WS_BORDER,7,24,293,14
 END
 
 IDD_PREF_ABOUT DIALOGEX 0, 0, 218, 218
-STYLE DS_SETFONT | WS_CHILD
+STYLE WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
@@ -899,10 +890,9 @@ BEGIN
 END
 
 IDD_CHPASS DIALOGEX 0, 0, 225, 84
-STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | 
-    WS_SYSMENU
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Change Private Key Passphrase"
-FONT 8, "MS Sans Serif", 0, 0, 0x0
+FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,7,63,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,62,63,50,14
@@ -915,7 +905,7 @@ BEGIN
 END
 
 IDD_PREF_IDENT DIALOGEX 0, 0, 218, 218
-STYLE DS_SETFONT | WS_CHILD
+STYLE WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
@@ -934,7 +924,7 @@ BEGIN
 END
 
 IDD_PREF_PERFORM DIALOGEX 0, 0, 218, 218
-STYLE DS_SETFONT | WS_CHILD
+STYLE WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
@@ -945,7 +935,7 @@ BEGIN
 END
 
 IDD_PREF_CHAT DIALOGEX 0, 0, 218, 218
-STYLE DS_SETFONT | WS_CHILD
+STYLE WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
@@ -989,7 +979,7 @@ BEGIN
 END
 
 IDD_PREF_LICENSE DIALOGEX 0, 0, 218, 218
-STYLE DS_SETFONT | WS_CHILD
+STYLE WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
@@ -999,7 +989,7 @@ BEGIN
 END
 
 IDD_PREF_CHAT_B DIALOGEX 0, 0, 218, 218
-STYLE DS_SETFONT | WS_CHILD
+STYLE WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
@@ -1016,6 +1006,15 @@ BEGIN
     GROUPBOX        "Logging",IDC_STATIC,0,0,217,216
 END
 
+IDD_WIZ0 DIALOG DISCARDABLE  0, 0, 210, 140
+STYLE DS_CONTROL | WS_CHILD
+FONT 8, "MS Sans Serif"
+BEGIN
+    GROUPBOX        "Welcome",IDC_STATIC,0,0,209,139
+    LTEXT           "Welcome to the final stage of setup. At this point we will configure WASTE to connect to the network.\n\nAlthough this does not require an internet connection, connecting at this time will allow you to test the new network setup.\n\nIf you wish to connect to a network that already exists, please have the public key to the server you wish to connect to ready. Entering this code allows WASTE to communicate with the other user's computer.\n\nThanks, and enjoy using WASTE!",
+                    IDC_STATIC,8,10,194,122
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1023,7 +1022,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
+GUIDELINES DESIGNINFO MOVEABLE PURE 
 BEGIN
     IDD_NET, DIALOG
     BEGIN
@@ -1326,6 +1325,11 @@ BEGIN
         VERTGUIDE, 128
         VERTGUIDE, 210
     END
+
+    IDD_WIZ0, DIALOG
+    BEGIN
+        BOTTOMMARGIN, 139
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -1336,17 +1340,17 @@ END
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE 
+1 TEXTINCLUDE MOVEABLE PURE 
 BEGIN
     "resource.hpp\0"
 END
 
-2 TEXTINCLUDE 
+2 TEXTINCLUDE MOVEABLE PURE 
 BEGIN
     "#include ""afxres.h""\0"
 END
 
-3 TEXTINCLUDE 
+3 TEXTINCLUDE MOVEABLE PURE 
 BEGIN
     "#include ""version.rc2""\0"
 END
@@ -1361,36 +1365,36 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_ICON1               ICON                    "res\\icon1.ico"
-IDI_ROOT                ICON                    "res\\allusers.ico"
-IDI_PARENT              ICON                    "res\\updir.ico"
-IDI_USER                ICON                    "res\\user.ico"
-IDI_FILE                ICON                    "res\\file.ico"
-IDI_DIR                 ICON                    "res\\dir.ico"
-IDI_SEARCH              ICON                    "res\\search.ico"
-IDI_STOPDL              ICON                    "res\\stopdl.ico"
-IDI_MOVETOTOP           ICON                    "res\\move2top.ico"
-IDI_MOVETOEND           ICON                    "res\\move2end.ico"
-IDI_DLNOW               ICON                    "res\\dlnow.ico"
-IDI_CLEARIA             ICON                    "res\\clear-inactive2.ico"
-IDI_CLEARCOMP           ICON                    "res\\clear-completed2.ico"
-IDI_CLEARALL            ICON                    "res\\clear-all2.ico"
-IDI_CONNECT             ICON                    "res\\connect.ico"
-IDI_DISCONNECT          ICON                    "res\\disconnect.ico"
-IDI_FORWARD             ICON                    "res\\forward.ico"
-IDI_BACKWARD            ICON                    "res\\backward.ico"
-IDI_MORE                ICON                    "res\\more2.ico"
-IDI_CHAT                ICON                    "res\\chat.ico"
-IDI_BROWSE              ICON                    "res\\browse.ico"
-IDI_XFERS               ICON                    "res\\transfers.ico"
-IDI_PLAY                ICON                    "res\\iconplay.ico"
+IDI_ICON1               ICON    DISCARDABLE     "res\\icon1.ico"
+IDI_ROOT                ICON    DISCARDABLE     "res\\allusers.ico"
+IDI_PARENT              ICON    DISCARDABLE     "res\\updir.ico"
+IDI_USER                ICON    DISCARDABLE     "res\\user.ico"
+IDI_FILE                ICON    DISCARDABLE     "res\\file.ico"
+IDI_DIR                 ICON    DISCARDABLE     "res\\dir.ico"
+IDI_SEARCH              ICON    DISCARDABLE     "res\\search.ico"
+IDI_STOPDL              ICON    DISCARDABLE     "res\\stopdl.ico"
+IDI_MOVETOTOP           ICON    DISCARDABLE     "res\\move2top.ico"
+IDI_MOVETOEND           ICON    DISCARDABLE     "res\\move2end.ico"
+IDI_DLNOW               ICON    DISCARDABLE     "res\\dlnow.ico"
+IDI_CLEARIA             ICON    DISCARDABLE     "res\\clear-inactive2.ico"
+IDI_CLEARCOMP           ICON    DISCARDABLE     "res\\clear-completed2.ico"
+IDI_CLEARALL            ICON    DISCARDABLE     "res\\clear-all2.ico"
+IDI_CONNECT             ICON    DISCARDABLE     "res\\connect.ico"
+IDI_DISCONNECT          ICON    DISCARDABLE     "res\\disconnect.ico"
+IDI_FORWARD             ICON    DISCARDABLE     "res\\forward.ico"
+IDI_BACKWARD            ICON    DISCARDABLE     "res\\backward.ico"
+IDI_MORE                ICON    DISCARDABLE     "res\\more2.ico"
+IDI_CHAT                ICON    DISCARDABLE     "res\\chat.ico"
+IDI_BROWSE              ICON    DISCARDABLE     "res\\browse.ico"
+IDI_XFERS               ICON    DISCARDABLE     "res\\transfers.ico"
+IDI_PLAY                ICON    DISCARDABLE     "res\\iconplay.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Menu
 //
 
-IDR_MENU1 MENU 
+IDR_MENU1 MENU DISCARDABLE 
 BEGIN
     POPUP "&File"
     BEGIN
@@ -1415,7 +1419,7 @@ BEGIN
     END
 END
 
-IDR_CONTEXTMENUS MENU 
+IDR_CONTEXTMENUS MENU DISCARDABLE 
 BEGIN
     POPUP "DLWnd"
     BEGIN
@@ -1490,7 +1494,7 @@ END
 // Accelerator
 //
 
-IDR_ACCEL1 ACCELERATORS 
+IDR_ACCEL1 ACCELERATORS MOVEABLE PURE 
 BEGIN
     "A",            ID_VIEW_ALWAYSONTOP2,   VIRTKEY, CONTROL, NOINVERT
     "B",            IDC_SEARCH2,            VIRTKEY, ALT, NOINVERT
@@ -1507,21 +1511,21 @@ END
 // RT_MANIFEST
 //
 
-1                       RT_MANIFEST             "res\\manifest.xml"
+1                       RT_MANIFEST MOVEABLE PURE "res\\manifest.xml"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // DAT
 //
 
-IDR_METALLICA           DAT                     "res\\Metallica.dat"
+IDR_METALLICA           DAT     MOVEABLE PURE   "res\\Metallica.dat"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Cursor
 //
 
-IDC_HTMLHAND            CURSOR                  "res\\hand.cur"
+IDC_HTMLHAND            CURSOR  DISCARDABLE     "res\\hand.cur"
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 

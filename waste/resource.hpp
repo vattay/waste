@@ -1,5 +1,5 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ generated include file.
+// Microsoft Developer Studio generated include file.
 // Used by waste.rc
 //
 #define IDD_MAIN                        101
@@ -54,6 +54,7 @@
 #define IDD_PREF_CHAT_B                 177
 #define IDC_CURSOR1                     178
 #define IDC_HTMLHAND                    178
+#define IDD_WIZ0                        181
 #define IDD_PREFS                       215
 #define IDD_PREF_NETWORK                240
 #define IDD_PREF_SECURITY               241
@@ -75,6 +76,7 @@
 #define IDD_PREF_IDENT                  257
 #define IDD_PREF_NETWORK_B              258
 #define IDD_PREF_NETWORK_C              259
+#define IDD_DIALOGBAR                   260
 #define IDC_LIST_PROFILES               1000
 #define IDC_RECTANGLE                   1001
 #define IDC_REMOVECONNECTION            1002
@@ -377,7 +379,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        179
+#define _APS_NEXT_RESOURCE_VALUE        182
 #define _APS_NEXT_COMMAND_VALUE         40061
 #define _APS_NEXT_CONTROL_VALUE         1272
 #define _APS_NEXT_SYMED_VALUE           102
