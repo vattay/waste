@@ -1,10 +1,10 @@
-Changes since 1.5b2:
+WASTE version 1.5 (??.??.????)
 
 -New network connection handling (untied from MSWindows)
 -New networking algorithms for connection retries, backoff, 
  and # of connections to keep up
 -Added intelligence for dynamic IP robustness
--Endian changes to encryption code for MacOSX port
+-Endian changes to encryption code for Mac OS X port
 -Added wastesrv_admin tool for creating config files in unix
 -File scanning now follows symbolic links on unix
 -Various compiler warnings fixed
@@ -17,3 +17,144 @@ Changes since 1.5b2:
  problems with mismatched clients
 -Fixed bug with dynDNS on outgoing connections
 -Eliminated some windows build warnings
+-Fixed forgotten key and connection speed, and invalid password
+ error thanks to bigtoe416
+-Fixed symlink loop thanks to patch
+-Updated long outdated copyright information
+-Merged changelogs
+
+WASTE version 1.5 beta 3 (2.4.2005)
+
+-New installer
+
+WASTE version 1.5 beta 2 (6.15.2004)
+
+-Fixed the license dialog which was stalling for a few seconds when opened...
+-Minor cosmetic gui changes
+
+WASTE version 1.5 beta 1 (6.14.2004)
+
+-Started fresh with 1.0b code
+-Added nick coloring in the chat.
+-Added a more generic and configurable logging facility. Added a class that knows levels of logging. You decide what to log.
+-Completely converted the code to C++, including the RSA sources. I have also made it compatible for some other source editors.
+-Introduced RSA blinding to prevent RSA timing attacks.
+-New blowfish implementation c++ class to waste. It's easier to use because it's a template class.
+-Introduced "stealth mode". This mode should make it harder to passively detect a waste client. It also makes it invisible to p2pwatchdog.com and significantly increases security and DOS-attack resistance. Handshake packets have random length in this mode. The connection sequence code was partially recoded to have a better handling of the current state of the handshake. You could call it pre-shared key mode although this one is even more.
+-If not in "stealth mode" a warning is printed to the logfile if someone tries to connect to you with valid private key but wrong network password. In "stealth mode" this is not possible, because using wrong passwords leads to random data. You will see unknown pubkey messages in the log with changing pubkey hashes for every connect you might assume someone with bad password or simply someone connecting to you not using waste.
+-Protocol is sligtly modified when using network hashes to prevent offline cracking of network password.
+-Fixed several exploitable holes.
+-Introduced limiting of incoming connections. You can choose between limiting all incoming connections regardless of the clients oryou can choose to limit the connections each client can open (each client is identified by its public key). Shortly said if two waste clients share one private key, you must set the incoming connection limit per host to two in order to have both clients connected. You can also have both limits active.
+-At logging level of 5 the public key hash of a client is also logged when there are connection problems. You will see the hashes of clients that try to connect to you and  were not allowed to.
+-Spent lots of time cleaning out poorly coded crap from WASTE. It is now more unified: you can compile for linux as server, which code is nearly the same now as for windows except some small part in the startup code. Unfortunately some parts of the WASTE protocol depends on the gui (really stupid problem). The linux server has a command line do make it daemon. (run in background without a logged on user).
+-You can also compile a Windows WASTE command line server which is functionally equal to the linux version. Mainly for testing! But you could also make it Windows service with the SrvAny tool from the Windows resource kit. Small modification would make it native windows service capable....
+-Made a special chat room $$broadcast to send messages to all users.
+-You can now send chat to either clientid or public key hash or username. This is a commandline only fearure from the chat window. Don't bog me making this gui.You can also use /whois [pubkeyhash] for example.
+-Now WASTE honors hidden file attributes and on linux ".filename".(dotted filenames)
+-Uploads and Downloads to clients are optionally "unique". An option download only once forces a file being unique in a directory. Up and download feature! This should prevent you to upload a file to a user several thousand times ;)
+-You may have problems using the download list from the alpha2+ clients. It may happen that they are not fully imported. Simply re-download them and they will be resumed!
+-Usernames are persisted on downloads as they were when the download started.
+-Usernames with beginning dot is now handles correctly as "invisible client". This is no new function. It is bug fixed. It is nearly the same as if you have no nick, but you may chat with this dotted name. Such users are not seen on the userlist. On the browse such user is shown as the clientid.
+-Linux server now knows signals HUP and USR1 and INT.HUP does dynamic reload of keys and config. USR1 flushes logs. INT shuts down.I have put my batch scripts to the distribution.
+-Introduced dynamic IP support (called auto-mode) and fixed the other option dyn dns support to resolve addresses on reconnect when completely disconnected.Now Waste is able to keep a dynamic network up if you have auto reconnect activated on your dialup connection.
+-The dyn dns is resolved every time a waste client switches from "network down" to active state(connecting)
+-Made chat rooms pop up on incoming messages when you have sent it to tray. This is a configurable option.
+-Added sounds to incoming chats. This is a configurable option.
+-Added chat logging. You can select what kind of chats you want to log.You can select private, room or broadcast.Every context(chat room) is saved to a single file with timestamp.
+-Changing pass phrase of private key now works. Did someone notice that it hasn't worked????
+-Made access lists work. That code behind was completely buggy. I have made several functions that handles IP better.
+-WATE now also enumerates the local subnets from adapters to determine if an address on local subets may be reachable. This should avoid connecting to unreachable clients and sending private IPs to the internet.
+-Introduced templates
+-Optimized code
+-Fixed the Random number generation which was very very buggy and could have been determined on older waste versions easier than intended. 
+-Although the inner protocol is compatible to older clients, I have made them incompatible by forcing another sync sequence. Because older clients have security issues this step is really needed.
+-Fixed the connection list, so that clients die after more that 100 tries and when connected clients die 8 times faster. That was intended but did not work.
+-Made all configuration parameters declared in one c++ header file. All network parameters in another file.
+-Changed some configuration defaults. (maintain connections is default 0 in my version, coz I don't like auto-connecting clients, although the value is still persisted as before). Another one was the stupid upload 160 files at once crap(now 16). I have also fixed the bug in that limiter.
+-Cleaned up the whole source code and made it better readable.
+-Closed several buffer overflow conditions.
+-The hashing of files is now only done when a client initially starts a download. This should prevent lockups of waste when users resume downloads.The hashing should be either asynchronous or pre-calculated, but it's difficult to implement. When you experience stalled waste for several seconds, this is due to hashing uploads. Deactivate hashing on send preferences to avoid waste consuming much resources.
+-The handling of IP's has been improved. The private 172.16.0.0/12 network has also been added to be known.
+-A small bug that may happen on slow connections sporadically refusing to connect has been solved.
+-Several parts in the handshake sequence were non-random looking. Now everything is optionally padded with random crap.
+-Tons of bugs in the chat have been fixed. Lines can now be up to one 1024 chars.
+-The time before a nick starves has been doubled to prevent messages of stalled or slow clients.
+-The database has scanned the drive on startup whatever you have configured in the preferences. That has been fixed. Only cached data is read on startup.
+-Several memory leaks have been fixed through all parts of waste.
+-Many parts in the source code have been revised and duplicate code parts merged and optimized.
+-When you have your download path and parts of your shared uploads in one directory, the other waste clients won't see that file unless it's complete. Shortly said a file that has a ".wastestate" file belonging to it is not seen to other clients. This should prevent others reading incomplete files. This is necessary because waste is currently unable to handle partial downloads like emule or gnutella does. For that reason you should use a tool like winrar to split files, like those people in the ftp scene do.
+-Closed a bug in the memory management of chat functions that could have crashed waste.
+-Optimized the code to make it easier to debug.
+-Now clients try to maintain direct connections on transfers if configured. You can choose if your client permits this and if your client actively tries to open a direct connection. It is now done regardless if you are uploader or downloader. This should fix many problems in the WASTE network because of routing traffic.
+-Your local IP is only sent to other clients if it was correctly resolved. This should prevent bad IP's on the network lists. Please remember that it is still your responsibility to make the WASTE port connectable. If you use a router you must set a rule that the TCP-port is forwarded to you. Otherwise other clients cannot connect. Same as for every other application...
+-The title bar of network connection should now be updated correctly to show the active connections.
+-The preferences have got a big rework. It's slightly bigger in size and where appropriate I have split the options to more tabs to make it easier to read. Too much information on one tab might confuse users.
+-Other minor cosmetic changes
+
+WASTE version 1.4 alpha 3 (4.14.2004)
+
+-Documentation
+-Improved installer while still trying to maintain WINE and NSIS 1.x support
+-Small interface tweaks
+
+WASTE version 1.4 alpha 2 (2.4.2004)
+
+-Nicknames are now displayed on the download and download queue windows
+ (instead of "test", "test2" and "Done.")
+-Nicknames are now logged in download log
+-Nicknames for downloads are saved and restored when waste is restarted
+-Full save path is now stored in download log
+-Moved all coloring options to the old nick colors page in prefrences to make
+more room on the chat prefs page
+-Nicknames are now kept when item is moved around in download queue
+-Nicknames are now shown when a file is sent TO you from someone else (drag and
+ drop on username).
+-Removed text, "(Black)", from nick color prefs as it was incorrect.  Color set
+ by option text color on same page.
+-Added option to play wav file on new message when window is not active.  Fully
+ customizable.
+-Cosmetic fixes
+-Readded make files to source package and added some fixes to the installer.
+
+WASTE version 1.4 alpha 1 (1.23.2004)
+
+-Some minor fixes
+-Chat and file logging back BUT NOW AN OPTION
+-Nickname coloring now changeable
+-Improvments in file transfer box.
+
+WASTE version 1.3c (NONAME fork) (9.11.2003)
+
+-Fixed crashing when closing chat window
+-Fixed problem with auto-rescanning of directories on startup if
+  'scan on startup' was enabled, but file sharing was disabled.
+-Fixed minor compile warning regarding signed/unsigned ints
+
+WASTE version 1.3b (NONAME fork) (9.10.2003)
+
+-Added Dynamic DNS / Hostname support in 'Force IP' option (From Troed)
+-Added 'Perform' menu, to automatically have the client /join channels on startup. (From Troed)
+-Moved auto broadcast of key time down to 10 minutes from 60
+-Pings network every 30 seconds instead of 2 minutes
+
+WASTE version 1.3a (NONAME fork) (8.29.2003)
+
+-Added option to disable file transfer logging
+-Added option to specify directory to log file transfers to
+
+WASTE version 1.2-netmask (NONAME fork) (8.15.2003)
+
+-Removed Sounds from chat
+-Removed logging of private and public chats
+
+WASTE version 1.1 (7.5.2003)
+
+-Source is now compiled under Visual C++ 7 (still unmanaged).
+-Other user's nicks are colored blue in chat windows
+-WAV file played on incoming chat message - to change the sound, just put any WAV in your WASTE home folder and call it 'IMInbound.wav'.
+-Logging of chat windows to file. In your WASTE home folder files called 'Chatlog-<nick you are chatting with>.txt' will be created.
+-Logging of downloaded files. All downloaded files will be logged to 'WASTELog-<your nick>.txt' in your first shared folder. The idea here is for you to be able to see what folks on your network are downloading.
+
+WASTE version 1.0b (5.28.2003)
+
+-Initial release

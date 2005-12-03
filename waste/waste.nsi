@@ -1,3 +1,20 @@
+;WASTE - waste.nsi (installer script)
+;Copyright (C) 2004-2005 WASTE Development Team
+
+;WASTE is free software; you can redistribute it and/or modify
+;it under the terms of the GNU General Public License as published by
+;the Free Software Foundation; either version 2 of the License, or
+;(at your option) any later version.
+
+;WASTE  is distributed in the hope that it will be useful,
+;but WITHOUT ANY WARRANTY; without even the implied warranty of
+;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;GNU General Public License for more details.
+
+;You should have received a copy of the GNU General Public License
+;along with WASTE; if not, write to the Free Software
+;Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
 ; WASTE Delivery System
 
 ; NOTE: NSIS 1.x is no longer supported! NSIS 2.x series is now very stable and must be used.
@@ -13,7 +30,7 @@
 !define XP_STYLE_ON
 
 ; Choose wether IP display is enabled (displays at the end of installation)
-; This requires the Internet plugin available at: http://www.lobo-lunar.com/nsis/
+; This requires the Internet plugin available at: http://plugins.joelito.net/
 !define IP_SHOW_ON
 
 ; Reserve the custom welcome page for solid compression
@@ -293,7 +310,7 @@ Function .onInstSuccess
   RunIt:
   !ifdef IP_SHOW_ON
     Internet::GetLocalHostIP ${VAR_1}
-    DetailPrint "Your local IP is: $1 (this may be useful for configuring up WASTE)"
+    DetailPrint "Your local IP is: $1 (this may be useful for configuring WASTE)"
   !endif
   RunItNow:
   DetailPrint "Starting ${APP_NAME_BIG}..."
