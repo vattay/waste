@@ -1,0 +1,18 @@
+To compile WASTE, you must use Visual C++ .NET 2003 (7.1) or Visual C++ .NET (7.0),
+however the older .NET is officially unsupported at this time, as well as any newer
+Visual C++ version which may exist.
+
+To compile WASTE in Visual C++ .NET 2003, edit build\Version to reflect the build and
+version number you wish, then run Inc.bat. After this has completed, open WASTE.vcproj
+and Build the solution.
+
+To compile WASTE in Visual C++ .NET, follow the same instructions above, except
+replacing WASTE.vcproj.7 with WASTE.vcproj.
+
+WASTE can also be compiled using a custom setup environment using the free Visual C++
+tools provided at various times by Microsoft. Unfortunately we cannot provide these
+files as they are copyrighted material. To build WASTE, follow instructions above,
+excepting the last step, where you must open a console and run "ZWinMake.bat", which
+will run nmake for you and build the project.
+
+To build WASTE server, open WASTESrv.vcproj for .NET 2003, or WASTESrv.vcproj.7 for .NET.

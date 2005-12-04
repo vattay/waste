@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="7.10"
-	Name="WASTESrv"
-	ProjectGUID="{00F18A25-6EC0-44F2-8FC2-78C929C86594}"
-	RootNamespace="WASTESrv"
+	Version="7.00"
+	Name="WASTE"
+	ProjectGUID="{00F18A24-6EC0-44F2-8FC2-78C929C86594}"
+	RootNamespace="WASTE"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>
@@ -23,7 +23,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_DEFINE_SNIFF;_DEFINE_SRV"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_DEFINE_SNIFF"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
 				SmallerTypeCheck="TRUE"
@@ -37,10 +37,10 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="ws2_32.lib ComCtl32.Lib"
+				AdditionalDependencies="ws2_32.lib ComCtl32.Lib Winmm.lib"
 				LinkIncremental="2"
 				GenerateDebugInformation="TRUE"
-				SubSystem="1"
+				SubSystem="2"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -79,9 +79,9 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="3"
-				GlobalOptimizations="TRUE"
 				FavorSizeOrSpeed="2"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_DEFINE_SNIFF;_DEFINE_SRV"
+				OptimizeForWindowsApplication="TRUE"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_DEFINE_SNIFF"
 				StringPooling="TRUE"
 				MinimalRebuild="TRUE"
 				RuntimeLibrary="0"
@@ -94,10 +94,10 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="ws2_32.lib ComCtl32.Lib"
+				AdditionalDependencies="ws2_32.lib ComCtl32.Lib Winmm.lib"
 				LinkIncremental="1"
 				GenerateDebugInformation="TRUE"
-				SubSystem="1"
+				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
 				OptimizeForWindows98="1"
@@ -137,7 +137,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_DEFINE_SNIFF;_DEFINE_SRV"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_DEFINE_SNIFF"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
 				SmallerTypeCheck="TRUE"
@@ -151,10 +151,10 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="ws2_32.lib ComCtl32.Lib"
+				AdditionalDependencies="ws2_32.lib ComCtl32.Lib Winmm.lib"
 				LinkIncremental="2"
 				GenerateDebugInformation="TRUE"
-				SubSystem="1"
+				SubSystem="2"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -195,6 +195,9 @@
 				RelativePath="blowfish.cpp">
 			</File>
 			<File
+				RelativePath="childwnd.cpp">
+			</File>
+			<File
 				RelativePath="config.cpp">
 			</File>
 			<File
@@ -207,10 +210,19 @@
 				RelativePath="filedb.cpp">
 			</File>
 			<File
+				RelativePath="keygen.cpp">
+			</File>
+			<File
 				RelativePath="license.cpp">
 			</File>
 			<File
 				RelativePath="listen.cpp">
+			</File>
+			<File
+				RelativePath="listview.cpp">
+			</File>
+			<File
+				RelativePath="main.cpp">
 			</File>
 			<File
 				RelativePath="mqueue.cpp">
@@ -220,6 +232,12 @@
 			</File>
 			<File
 				RelativePath="netkern.cpp">
+			</File>
+			<File
+				RelativePath="netq.cpp">
+			</File>
+			<File
+				RelativePath="prefs.cpp">
 			</File>
 			<File
 				RelativePath="sha.cpp">
@@ -232,9 +250,6 @@
 			</File>
 			<File
 				RelativePath="srchwnd.cpp">
-			</File>
-			<File
-				RelativePath="srvmain.cpp">
 			</File>
 			<File
 				RelativePath="stdafx.cpp">
@@ -327,6 +342,9 @@
 				RelativePath="Build\build.hpp">
 			</File>
 			<File
+				RelativePath="childwnd.hpp">
+			</File>
+			<File
 				RelativePath="config.hpp">
 			</File>
 			<File
@@ -346,6 +364,9 @@
 			</File>
 			<File
 				RelativePath="itemstack.hpp">
+			</File>
+			<File
+				RelativePath="license.hpp">
 			</File>
 			<File
 				RelativePath="listen.hpp">
@@ -462,13 +483,102 @@
 			Name="Resource Files"
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe">
 			<File
-				RelativePath="manifest.xml">
+				RelativePath="res\allusers.ico">
 			</File>
 			<File
-				RelativePath="versionSrv.rc2">
+				RelativePath="res\backward.ico">
 			</File>
 			<File
-				RelativePath="wasteSrv.rc">
+				RelativePath="res\bitmap1.bmp">
+			</File>
+			<File
+				RelativePath="res\browse.ico">
+			</File>
+			<File
+				RelativePath="res\chat.ico">
+			</File>
+			<File
+				RelativePath="res\clear-all2.ico">
+			</File>
+			<File
+				RelativePath="res\clear-completed2.ico">
+			</File>
+			<File
+				RelativePath="res\clear-inactive2.ico">
+			</File>
+			<File
+				RelativePath="res\connect.ico">
+			</File>
+			<File
+				RelativePath="res\dir.ico">
+			</File>
+			<File
+				RelativePath="res\disconnect.ico">
+			</File>
+			<File
+				RelativePath="res\dlnow.ico">
+			</File>
+			<File
+				RelativePath="res\file.ico">
+			</File>
+			<File
+				RelativePath="res\forward.ico">
+			</File>
+			<File
+				RelativePath="res\hand.cur">
+			</File>
+			<File
+				RelativePath="res\icon1.ico">
+			</File>
+			<File
+				RelativePath="res\iconplay.ico">
+			</File>
+			<File
+				RelativePath="res\manifest.xml">
+			</File>
+			<File
+				RelativePath="res\Metallica.dat">
+			</File>
+			<File
+				RelativePath="res\more2.ico">
+			</File>
+			<File
+				RelativePath="res\move2end.ico">
+			</File>
+			<File
+				RelativePath="res\move2top.ico">
+			</File>
+			<File
+				RelativePath="res\search.ico">
+			</File>
+			<File
+				RelativePath="res\stopdl.ico">
+			</File>
+			<File
+				RelativePath="res\transfers.ico">
+			</File>
+			<File
+				RelativePath="res\up dir.ico">
+			</File>
+			<File
+				RelativePath="res\updir.ico">
+			</File>
+			<File
+				RelativePath="res\user.ico">
+			</File>
+			<File
+				RelativePath="version.rc2">
+			</File>
+			<File
+				RelativePath="waste.rc">
+			</File>
+		</Filter>
+		<Filter
+			Name="MakeFile"
+			Filter="">
+			<File
+				RelativePath="ZWinMakefile"
+				FileType="8">
 			</File>
 		</Filter>
 	</Files>

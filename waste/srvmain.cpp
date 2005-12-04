@@ -176,6 +176,7 @@ int main(int argc, char **argv)
 	bool daemonise = false;
 	const char *profile = NULL;
 	const char *logpath = NULL;
+	const char *pid = NULL;
 
 	{
 		bool dohelp = true;

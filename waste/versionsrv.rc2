@@ -1,7 +1,7 @@
 /*
 WASTE
 Copyright (C) 2003 Nullsoft, Inc.
-Copyright (C) 2004 WASTE Development Team
+Copyright (C) 2004-2005 WASTE Development Team
 
 WASTE is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "build\build.hpp"
 
 #ifdef APSTUDIO_INVOKED
-#error "Cannot open that one in RC-Editor"
+#error "Sorry, you cannot open this file in RC-Editor"
 #endif
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)
@@ -48,10 +48,10 @@ VS_VERSION_INFO VERSIONINFO
 			BLOCK "000004b0"
 			BEGIN
 				VALUE "CompanyName", "GNU"
-				VALUE "FileDescription", "WASTE Secure Collaboration Client"
+				VALUE "FileDescription", "WASTE Secure Collaboration Server"
 				VALUE "FileVersion", __VER_SFULLRB
 				VALUE "InternalName", "WasteSrv.exe"
-				VALUE "LegalCopyright", "(C) 2003 Nullsoft, Inc., (C) 2004 WASTE Development Team"
+				VALUE "LegalCopyright", "(C) 2003 Nullsoft, Inc., (C) 2004-2005 WASTE Development Team"
 				VALUE "OriginalFilename", "WasteSrv.exe"
 				VALUE "ProductName", "WasteSrv"
 				VALUE "ProductVersion", __VER_SFULLRB
