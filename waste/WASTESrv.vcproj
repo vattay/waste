@@ -222,6 +222,9 @@
 				RelativePath="netkern.cpp">
 			</File>
 			<File
+				RelativePath=".\netq.cpp">
+			</File>
+			<File
 				RelativePath="sha.cpp">
 			</File>
 			<File

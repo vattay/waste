@@ -1212,7 +1212,7 @@ static const char* dSevStArr[]=
 	"Critical", //ds_Critical
 	"Error   ", //ds_Error
 	"Warning ", //ds_Warning
-	"Inform. ", //ds_Informational
+	"Inform  ", //ds_Informational
 	"Debug   "  //ds_Debug
 };
 

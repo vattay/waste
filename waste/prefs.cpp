@@ -1063,15 +1063,15 @@ static void Pref_Network4Proc_Help(HWND hwnd)
 static void Pref_Network4Proc_Help2(HWND hwnd)
 {
 	static const char szPSKHint[]=
-		"If this option is selected, WASTE tries to do several things to make it more obfuscated.\r\n"
-		"It will make the initial handshake(saying hallo to the other WASTE clients) harder to detect.\r\n"
-		"It will also make it harder to \"denial of service\"-attack WASTE.\r\n"
-		"It is always a good thing to enable this option.\r\n"
+		"If this option is selected, WASTE tries to do several things to make network traffic more obfuscated:\r\n"
+		"It will make the initial handshake (the process of saying hello to the other WASTE clients) harder to detect.\r\n"
+		"It will also make it harder to initate a \"denial of service\" attack on WASTE.\r\n"
+		"It is always a good idea to enable this option.\r\n"
 		"Unfortunately you must supply a long password for security reasons.\r\n"
 		"You should only use this option if your password is at least 15 characters long.\r\n"
-		"If you have a short password (\"hallo\" for example) you should NOT use this option.\r\n"
-		"This option should help to be unseen by many P2P-detection systems.\r\n"
-		"It is still possible and will always be possible to \"guess\" that you are using WASTE. Although there is not much evidence for it.\r\n";
+		"If you have a short password (\"hello\" for example) you should NOT use this option.\r\n"
+		"This option should help stop automated detection by P2P sniffer programs.\r\n"
+		"It is still possible and will always be possible to \"guess\" that you are using WASTE, although enabling this option makes it considerably harder.\r\n";
 	MessageBox(hwnd,szPSKHint,APP_NAME " Help",MB_ICONINFORMATION);
 }
 
@@ -1081,7 +1081,7 @@ static const char* Pref_Network4Proc_Help3()
 	"If your network uses a network name/ID/passphrase, enter it here.\r\n"
 	"You will only be able to connect to nodes with the same name/ID.\r\n"
 	"Be very careful when entering this password. Every user must have exactly the same password.\r\n"
-	"Look for leading and trailing spaces if error occur! In stealth mode, connection will fail without concrete warning!";
+	"Look for leading and trailing spaces if an error occurs! In stealth mode, a connection may fail without an accurate error message.";
 	return szKEYHint;
 }
 
@@ -1496,9 +1496,9 @@ static BOOL CALLBACK Pref_IdentProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,LPARA
 		case IDC_BUTTON_CLIENTID_HELP:
 			{
 				static const char szCidhelp[]=
-					"Use renew of Client ID only in certain circumstances!\r\n"
-					"It is only necessary if you have copied your profile and cannot download from another client!\r\n"
-					"If you click this button, other WASTE clients may lose their downloads from you!\r\n"
+					"Renew your Client ID only in very specific circumstances!\r\n"
+					"It is only necessary if you have copied your profile and cannot download from another client.\r\n"
+					"If you click this button, you may lose downloads and uploads currently in progress.\r\n"
 					"You have been warned!";
 				MessageBox(hwndDlg,szCidhelp,APP_NAME " Help",MB_ICONINFORMATION);
 				break;
@@ -1507,7 +1507,7 @@ static BOOL CALLBACK Pref_IdentProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,LPARA
 			{
 				static const char szCidwarn[]=
 					"Are you really sure?\r\n"
-					"Read the help before using this!!!";
+					"Please read the help \"?\" before proceeding!";
 				int ret=MessageBox(hwndDlg,szCidwarn,APP_NAME " Help",MB_YESNO|MB_ICONWARNING);
 				if (ret==IDYES) {
 					CreateID128(&g_client_id);

@@ -184,7 +184,7 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,7,35,50,14
     CONTROL         "Store password (not recommended)",IDC_CHECK_SAVE_PASSWD,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,149,19,127,10
-    CONTROL         "Password for keyfile:",IDC_STATIC,"Static",
+    CONTROL         "Please enter the keyfile password:",IDC_STATIC,"Static",
                     SS_LEFTNOWORDWRAP | WS_GROUP,7,6,269,8
     PUSHBUTTON      "Cancel",IDCANCEL,61,35,50,14
 END
@@ -365,7 +365,7 @@ BEGIN
     LTEXT           "Enter the network password here",IDC_STATIC,6,11,105,8
     GROUPBOX        "",IDC_STATIC,0,149,217,67
     GROUPBOX        "Network name/ID (optional)",IDC_STATIC,0,0,217,154
-    LTEXT           "You will only be able to connect to nodes with the same setting here.",
+    LTEXT           "You can only connect to nodes which have the same stealth mode setting.",
                     IDC_STATIC,6,173,204,24
 END
 
@@ -742,7 +742,7 @@ BEGIN
     LTEXT           "Log Location",IDC_STATIC,6,114,54,9
     LTEXT           "Status",IDC_STATUSLOGERROR,6,141,204,9
     GROUPBOX        "Logging",IDC_STATIC,0,93,217,123
-    LTEXT           "Loglevel(1=min, 5=max)",IDC_STATIC,6,153,93,9
+    LTEXT           "Loglevel (5 is highest)",IDC_STATIC,6,153,93,9
 END
 
 IDD_PREF_THROTTLE DIALOGEX 0, 0, 218, 218
@@ -1410,6 +1410,7 @@ BEGIN
     POPUP "&File"
     BEGIN
         MENUITEM "&Preferences...\tCtrl+P",     ID_VIEW_PREFERENCES
+        MENUITEM "Create/join chat...\tAlt+J",  IDC_CREATECHATROOM2
         MENUITEM SEPARATOR
         MENUITEM "&Quit",                       ID_FILE_QUIT
     END
@@ -1419,7 +1420,6 @@ BEGIN
         MENUITEM "Browser...\tAlt+B",           IDC_SEARCH
         MENUITEM "&Transfers...\tAlt+T",        ID_VIEW_TRANSFERS
         MENUITEM SEPARATOR
-        MENUITEM "Create/join chat...\tAlt+J",  IDC_CREATECHATROOM2
         POPUP "Chat Windows"
         BEGIN
             MENUITEM "No chat windows",             ID_VIEW_POOP_NOCHATWINDOWS
