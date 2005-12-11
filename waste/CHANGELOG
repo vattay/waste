@@ -25,6 +25,8 @@ WASTE version 1.5 (??.??.????)
 -Fixed build warnings
 -Minor interface improvements
 -Officially supported and compiled by C++ 7.1
+-About dialog has stupid protections (this is open source anyway after all). Changed to something prettier
+-Now UPX compressed
 
 WASTE version 1.5 beta 3 (2.4.2005)
 

@@ -483,6 +483,12 @@
 			Name="Resource Files"
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe">
 			<File
+				RelativePath=".\Res\about_dialog.bmp">
+			</File>
+			<File
+				RelativePath=".\Res\about_dialog.gif">
+			</File>
+			<File
 				RelativePath="res\allusers.ico">
 			</File>
 			<File
